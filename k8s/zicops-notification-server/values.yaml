@@ -1,0 +1,35 @@
+# Default values for zicops-notification-server.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+maxSurge: 1
+
+#Backend image details
+
+image:
+  repository: gcr.io/zicops-one/zicops-notification-server
+  tag: ${GITHUB_SHA}
+  pullPolicy: Always
+  health: /healthz
+  port: 8095
+
+#Authorization reverse proxy details
+asp:
+  repository: gcr.io/zicops-one/zicops-auth-proxy
+  tag: latest
+  port: 8080
+  pullPolicy: Always
+  arg:
+    mode: "authz"
+
+service:
+  type: ClusterIP
+  port: 80
+
+zcServiceAccount:
+  name: zicops-cc
+  secret: zicops-cc
+  credential:
+    dir: /var/run/secrets/zicops-cc
+    file: zicops-cc.json

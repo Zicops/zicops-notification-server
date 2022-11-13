@@ -1,0 +1,59 @@
+name: ZICOPS NM-CICD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+env:
+  PROJECT_ID: zicops-one
+  GKE_CLUSTER_1: zicops-one
+  GKE_ZONE_1: asia-southeast1-a
+  GKE_CLUSTER_2: zicops-production-cost-one
+  GKE_ZONE_2: asia-south1-a
+  NAMESPACE_2: staging
+  SERVICE_NAME: zicops-notification-server
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Auth GCP service account
+        uses: "google-github-actions/auth@v0"
+        with:
+          credentials_json: ${{ secrets.GCR_DEVOPS_SERVICE_ACCOUNT_KEY }}
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v0"
+      - name: "Use gcloud CLI"
+        run: "gcloud info"
+      - name: Build the Docker image
+        run: |-
+          docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:${GITHUB_SHA} --build-arg GO_MODULES_TOKEN=${{secrets.GO_MODULES_TOKEN}} .
+      - name: add latest tag
+        run: |-
+          docker tag gcr.io/$PROJECT_ID/$SERVICE_NAME:${GITHUB_SHA} gcr.io/$PROJECT_ID/$SERVICE_NAME:latest
+      - run: |
+          gcloud auth configure-docker -q
+      - name: Push image to GCP
+        run: docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:${GITHUB_SHA}
+      - name: Push image to GCP
+        run: docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:latest
+      - name: replace environment variable in values.yaml
+        run: envsubst '${GITHUB_SHA}' < k8s/zicops-notification-server/values.template.yaml >  k8s/zicops-notification-server/values.yaml
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - name: Deploy to zicops dev
+        run: |
+          gcloud container clusters get-credentials $GKE_CLUSTER_1 \
+            --zone $GKE_ZONE_1 \
+            --project $PROJECT_ID
+          helm upgrade zicops-notification-server k8s/zicops-notification-server --install --wait --atomic
+      - name: Deploy to zicops production
+        run: |
+          gcloud container clusters get-credentials -n $NAMESPACE_2 $GKE_CLUSTER_2 \
+            --zone $GKE_ZONE_2 \
+            --project $PROJECT_ID
+          helm upgrade zicops-notification-server k8s/zicops-notification-server --install --wait --atomic
