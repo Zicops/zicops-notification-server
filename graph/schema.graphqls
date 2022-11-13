@@ -1,0 +1,14 @@
+input NotificationInput {
+  input: String
+  output: String
+}
+
+type Notification {
+  id: ID!
+  input: String
+  output: String
+}
+
+type Mutation {
+  sendNotification(notification: NotificationInput!): Notification!
+}
