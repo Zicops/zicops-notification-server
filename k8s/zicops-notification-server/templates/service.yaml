@@ -1,12 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: { { include "zicops-notification-server.name" . } }
+  name: {{ include "zicops-notification-server.fullname" . }}
   labels:
-    app: { { template "zicops-notification-server.name" . } }
-    chart: { { template "zicops-notification-server.chart" . } }
-    release: { { .Release.Name } }
-    heritage: { { .Release.Service } }
+    {{- include "zicops-notification-server.labels" . | nindent 4 }}
 spec:
   type: { { .Values.service.type } }
   ports:
@@ -15,5 +12,4 @@ spec:
       protocol: TCP
       name: http-server-cq
   selector:
-    app: { { template "zicops-notification-server.name" . } }
-    release: { { .Release.Name } }
+    {{- include "zicops-notification-server.selectorLabels" . | nindent 4 }}
