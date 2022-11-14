@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: { { include "zicops-notification-server.name" . } }
+  name: "zicops-notification-server"
   labels:
-    app: { { template "zicops-notification-server.name" . } }
-    chart: { { template "zicops-notification-server.chart" . } }
-    release: { { .Release.Name } }
-    heritage: { { .Release.Service } }
+    app: "zicops-notification-server"
+    chart: "zicops-notification-server-0.1.0"
+    release: "zicops-notification-server"
+    heritage: "Helm"
 spec:
   type: { { .Values.service.type } }
   ports:
