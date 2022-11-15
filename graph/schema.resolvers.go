@@ -5,14 +5,21 @@ package graph
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/zicops/zicops-notification-server/graph/generated"
 	"github.com/zicops/zicops-notification-server/graph/model"
+	"github.com/zicops/zicops-notification-server/handlers"
 )
 
+// SendNotification is the resolver for the sendNotification field.
 func (r *mutationResolver) SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
-	panic(fmt.Errorf("not implemented"))
+	resp, err := handlers.SendNotification(ctx, notification)
+	if err != nil {
+		log.Printf("Error sending notification %v", err)
+		return nil, err
+	}
+	return resp, err
 }
 
 // Mutation returns generated.MutationResolver implementation.

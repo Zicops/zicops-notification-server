@@ -1,12 +1,11 @@
 input NotificationInput {
-  input: String
-  output: String
+  title: String!
+  body: String!
+  token : String!
 }
 
 type Notification {
-  id: ID!
-  input: String
-  output: String
+  statuscode: String!
 }
 
 type Mutation {

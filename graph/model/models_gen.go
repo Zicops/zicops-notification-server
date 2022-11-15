@@ -3,12 +3,11 @@
 package model
 
 type Notification struct {
-	ID     string  `json:"id"`
-	Input  *string `json:"input"`
-	Output *string `json:"output"`
+	Statuscode string `json:"statuscode"`
 }
 
 type NotificationInput struct {
-	Input  *string `json:"input"`
-	Output *string `json:"output"`
+	Title string `json:"title"`
+	Body  string `json:"body"`
+	Token string `json:"token"`
 }
