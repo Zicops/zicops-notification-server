@@ -14,7 +14,6 @@ import (
 
 // SendNotification is the resolver for the sendNotification field.
 func (r *mutationResolver) SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
-	log.Println("Reached here")
 	resp, err := handlers.SendNotification(ctx, notification)
 	if err != nil {
 		log.Printf("Error sending notification %v", err)

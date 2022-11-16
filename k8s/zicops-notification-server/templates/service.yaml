@@ -5,11 +5,11 @@ metadata:
   labels:
     {{- include "zicops-notification-server.labels" . | nindent 4 }}
 spec:
-  type: { { .Values.service.type } }
+  type: {{ .Values.service.type }}
   ports:
-    - port: { { .Values.service.port } }
-      targetPort: http-server-um
+    - port: {{ .Values.service.port }}
+      targetPort: http-ns
       protocol: TCP
-      name: http-server-cq
+      name: http
   selector:
     {{- include "zicops-notification-server.selectorLabels" . | nindent 4 }}
