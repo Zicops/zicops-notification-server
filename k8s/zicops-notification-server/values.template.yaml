@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: gcr.io/zicops/zicops-notification-server
+  repository: gcr.io/zicops-one/zicops-notification-server
   pullPolicy: Always
   health: /healthz
   tag: ${GITHUB_SHA}  
