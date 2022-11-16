@@ -53,7 +53,7 @@ jobs:
           helm upgrade zicops-notification-server k8s/zicops-notification-server --install --wait --atomic
       - name: Deploy to zicops production
         run: |
-          gcloud container clusters get-credentials -n $NAMESPACE_2 $GKE_CLUSTER_2 \
+          gcloud container clusters get-credentials $GKE_CLUSTER_2 \
             --zone $GKE_ZONE_2 \
             --project $PROJECT_ID
-          helm upgrade zicops-notification-server k8s/zicops-notification-server --install --wait --atomic
+          helm upgrade zicops-notification-server k8s/zicops-notification-server -n $NAMESPACE_2 --install --wait --atomic
