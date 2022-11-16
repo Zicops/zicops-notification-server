@@ -8,6 +8,11 @@ type Notification {
   statuscode: String!
 }
 
+
 type Mutation {
   sendNotification(notification: NotificationInput!): Notification!
+}
+
+type Query {
+  dummy(name: String): String
 }

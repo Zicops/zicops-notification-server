@@ -29,6 +29,7 @@ var cache *bigcache.BigCache
 
 func SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
 
+	log.Println("Reached send  notification function")
 	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
 	if err != nil {
 		log.Printf("Unable to create cache %v", err)
@@ -76,8 +77,8 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 func sendToCache(ch chan []byte, mut *sync.Mutex) {
 	mut.Lock()
 
+	log.Println("Reached cache function")
 	firebaseCh := make(chan []byte)
-	var m sync.Mutex
 
 	dataJson := <-ch
 
@@ -86,16 +87,20 @@ func sendToCache(ch chan []byte, mut *sync.Mutex) {
 	statusCode := 0
 	_ = json.Unmarshal(data, &statusCode)
 
-	if err != nil || statusCode == 404 {
-		//log
+	var m sync.Mutex
+	if err != nil || statusCode == 0 || statusCode == 404 {
+		log.Println("Sending data to channel")
 		firebaseCh <- dataJson
 		go sendToFirebase(firebaseCh, &m)
+		time.Sleep(1 * time.Second)
+		log.Println("Sent")
 	}
 	mut.Unlock()
 }
 
 func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 	m.Lock()
+	log.Println("Reached firebase notification")
 
 	dataJson := <-ch
 	body := bytes.NewReader(dataJson)
@@ -117,7 +122,8 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 	}
 
 	statusCode, err := json.Marshal(resp.StatusCode)
-	log.Println(statusCode)
+	log.Println(resp.StatusCode)
+	log.Println("Status code ", statusCode)
 	if err != nil {
 		log.Printf("Got error while converting data to json %v", err)
 	}
