@@ -10,7 +10,7 @@ import (
 	"github.com/zicops/zicops-notification-server/graph/generated"
 )
 
-const defaultPort = "8080"
+const defaultPort = "8094"
 
 func main() {
 	port := os.Getenv("PORT")
