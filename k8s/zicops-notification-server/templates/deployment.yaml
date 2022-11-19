@@ -70,5 +70,3 @@ spec:
       - name: zicops-cc
         secret:
           secretName: {{ .Values.zcServiceAccount.secret }}
-      - name: zdevastracert
-  
