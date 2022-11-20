@@ -11,6 +11,15 @@ image:
   tag: ${GITHUB_SHA}  
   port: 8094
 
+#Authorization reverse proxy details
+asp:
+  repository: gcr.io/zicops-one/zicops-auth-proxy
+  tag: latest
+  port: 8080
+  pullPolicy: Always
+  arg:
+    mode: "authz"
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -30,7 +39,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 8094
+  port: 80
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

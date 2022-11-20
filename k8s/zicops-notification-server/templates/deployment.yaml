@@ -4,39 +4,33 @@ metadata:
   name: {{ include "zicops-notification-server.fullname" . }}
   labels:
     {{- include "zicops-notification-server.labels" . | nindent 4 }}
-spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
-  selector:
-    matchLabels:
-      {{- include "zicops-notification-server.selectorLabels" . | nindent 6 }}
-  template:
-    metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      labels:
-        {{- include "zicops-notification-server.selectorLabels" . | nindent 8 }}
-    spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+ spec:
       containers:
         {{ $zcbcred := printf "%s/%s" .Values.zcServiceAccount.credential.dir .Values.zcServiceAccount.credential.file }}
+        - name: {{ .Chart.Name }}-asp
+          image: "{{ .Values.asp.repository }}:{{ .Values.asp.tag }}"
+          imagePullPolicy: {{ .Values.asp.pullPolicy }}
+          args: [
+            "--port={{ .Values.asp.port }}",
+            "--backend=http://127.0.0.1:{{ .Values.image.port }}",
+            "--mode={{ .Values.asp.arg.mode }}",
+          ]
+          volumeMounts:
+          - name: zicops-cc
+            mountPath: {{ .Values.zcServiceAccount.credential.dir | quote }}
+            readOnly: true
+          env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: {{ $zcbcred }}
+          ports:
+            - name: http-server-ns
+              containerPort: {{ .Values.asp.port }}
+              protocol: TCP
         - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http-ns
-              containerPort: {{ .Values.image.port }}
-              protocol: TCP
+            - containerPort: {{ .Values.image.port }}
           readinessProbe:
             httpGet:
               path: {{ .Values.image.health }}
@@ -47,25 +41,20 @@ spec:
           - name: zicops-cc
             mountPath: {{ .Values.zcServiceAccount.credential.dir | quote }}
             readOnly: true
+          - name: zdevastracert
+            mountPath: {{ .Values.zcCertAstra.cert.dir | quote }}
+            readOnly: true
+          - name: zdevastracertca
+            mountPath: {{ .Values.zcCertCAAstra.cert.dir | quote }}
+            readOnly: true
+          - name: zdevastrakey
+            mountPath: {{ .Values.zcAstraKey.key.dir | quote }}
+            readOnly: true
           env:
           - name: PORT
             value: {{ .Values.image.port | quote }}
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: {{ $zcbcred }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       volumes:
       - name: zicops-cc
         secret:
