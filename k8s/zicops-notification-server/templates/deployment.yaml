@@ -41,15 +41,6 @@ metadata:
           - name: zicops-cc
             mountPath: {{ .Values.zcServiceAccount.credential.dir | quote }}
             readOnly: true
-          - name: zdevastracert
-            mountPath: {{ .Values.zcCertAstra.cert.dir | quote }}
-            readOnly: true
-          - name: zdevastracertca
-            mountPath: {{ .Values.zcCertCAAstra.cert.dir | quote }}
-            readOnly: true
-          - name: zdevastrakey
-            mountPath: {{ .Values.zcAstraKey.key.dir | quote }}
-            readOnly: true
           env:
           - name: PORT
             value: {{ .Values.image.port | quote }}
