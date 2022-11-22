@@ -12,6 +12,9 @@ env:
   GKE_CLUSTER_2: zicops-production-cost-one
   GKE_ZONE_2: asia-south1-a
   NAMESPACE_2: staging
+  GKE_ZONE_3: asia-south1-a
+  GKE_CLUSTER_3: zicops-dot-com-1
+  NAMESPACE_3: production
   SERVICE_NAME: zicops-notification-server
 
 jobs:
@@ -57,3 +60,9 @@ jobs:
             --zone $GKE_ZONE_2 \
             --project $PROJECT_ID
           helm upgrade zicops-notification-server k8s/zicops-notification-server -n $NAMESPACE_2 --install --wait --atomic
+      - name: Deploy to zicops production
+        run: |
+          gcloud container clusters get-credentials $GKE_CLUSTER_3 \
+            --zone $GKE_ZONE_3 \
+            --project $PROJECT_ID
+          helm upgrade zicops-notification-server k8s/zicops-notification-server -n $NAMESPACE_3 --install --wait --atomic
