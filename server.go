@@ -8,6 +8,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/zicops/zicops-notification-server/graph"
 	"github.com/zicops/zicops-notification-server/graph/generated"
 	"github.com/zicops/zicops-notification-server/jwt"
@@ -21,18 +22,12 @@ func main() {
 		port = defaultPort
 	}
 	router := chi.NewRouter()
-
+	router.Use(middleware.Heartbeat("/healthz"))
 	router.Use(Middleware())
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 	router.Handle("/query", srv)
-	router.HandleFunc("/healthz", HealthCheckHandler)
 	log.Fatal(http.ListenAndServe(":"+port, router))
-}
-
-func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
 }
 
 func Middleware() func(http.Handler) http.Handler {
