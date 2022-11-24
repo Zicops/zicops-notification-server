@@ -26,6 +26,7 @@ func main() {
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 	router.Handle("/query", srv)
+	router.HandleFunc("/healthz", HealthCheckHandler)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
