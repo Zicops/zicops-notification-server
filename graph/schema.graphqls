@@ -1,7 +1,6 @@
 input NotificationInput {
   title: String!
   body: String!
-  token : String!
 }
 
 type Notification {
@@ -14,5 +13,6 @@ type Mutation {
 }
 
 type Query {
-  dummy(name: String): String
+  getAll: String
+
 }

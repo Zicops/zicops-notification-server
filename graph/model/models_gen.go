@@ -9,5 +9,4 @@ type Notification struct {
 type NotificationInput struct {
 	Title string `json:"title"`
 	Body  string `json:"body"`
-	Token string `json:"token"`
 }

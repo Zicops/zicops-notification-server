@@ -3,14 +3,18 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+
+	//"os"
 	"sync"
 	"time"
 
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
+	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
 )
 
@@ -27,7 +31,9 @@ type skeleton struct {
 var cache *bigcache.BigCache
 
 func SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
-
+	global.Ct = ctx
+	token := fmt.Sprintf("%s", ctx.Value("token"))
+	//log.Println(token)
 	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
 	if err != nil {
 		log.Printf("Unable to create cache %v", err)
@@ -42,8 +48,9 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 
 	m := message{
 		Notification: s,
-		To:           notification.Token,
+		To:           token,
 	}
+	AddToDatastore(m)
 
 	dataJson, err := json.Marshal(m)
 

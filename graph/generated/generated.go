@@ -52,7 +52,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Dummy func(childComplexity int, name *string) int
+		GetAll func(childComplexity int) int
 	}
 }
 
@@ -60,7 +60,7 @@ type MutationResolver interface {
 	SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error)
 }
 type QueryResolver interface {
-	Dummy(ctx context.Context, name *string) (*string, error)
+	GetAll(ctx context.Context) (*string, error)
 }
 
 type executableSchema struct {
@@ -97,17 +97,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Notification.Statuscode(childComplexity), true
 
-	case "Query.dummy":
-		if e.complexity.Query.Dummy == nil {
+	case "Query.getAll":
+		if e.complexity.Query.GetAll == nil {
 			break
 		}
 
-		args, err := ec.field_Query_dummy_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Dummy(childComplexity, args["name"].(*string)), true
+		return e.complexity.Query.GetAll(childComplexity), true
 
 	}
 	return 0, false
@@ -181,20 +176,24 @@ var sources = []*ast.Source{
 	{Name: "../schema.graphqls", Input: `input NotificationInput {
   title: String!
   body: String!
-  token : String!
 }
 
 type Notification {
   statuscode: String!
 }
 
+#type FirestoreMessage {
+#  body: String!
+#  title: String!
+#}
 
 type Mutation {
   sendNotification(notification: NotificationInput!): Notification!
 }
 
 type Query {
-  dummy(name: String): String
+  getAll: String
+
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -225,21 +224,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	if tmp, ok := rawArgs["name"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_dummy_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["name"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -389,8 +373,8 @@ func (ec *executionContext) fieldContext_Notification_statuscode(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_dummy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_dummy(ctx, field)
+func (ec *executionContext) _Query_getAll(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getAll(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -403,7 +387,7 @@ func (ec *executionContext) _Query_dummy(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Dummy(rctx, fc.Args["name"].(*string))
+		return ec.resolvers.Query().GetAll(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -417,7 +401,7 @@ func (ec *executionContext) _Query_dummy(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_dummy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_getAll(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -426,17 +410,6 @@ func (ec *executionContext) fieldContext_Query_dummy(ctx context.Context, field 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_dummy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -2350,7 +2323,7 @@ func (ec *executionContext) unmarshalInputNotificationInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "body", "token"}
+	fieldsInOrder := [...]string{"title", "body"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -2370,14 +2343,6 @@ func (ec *executionContext) unmarshalInputNotificationInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
 			it.Body, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "token":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
-			it.Token, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2481,7 +2446,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "dummy":
+		case "getAll":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -2490,7 +2455,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_dummy(ctx, field)
+				res = ec._Query_getAll(ctx, field)
 				return res
 			}
 
