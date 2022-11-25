@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/base64"
 	"log"
 
 	"github.com/zicops/zicops-notification-server/global"
@@ -9,10 +10,10 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func AddToDatastore(m message) {
+func AddToDatastore(m message, userId string) {
 
 	//log.Println("Context in addToDatastore ", global.Ct)
-	_, _, err := global.Client.Collection("notification").Add(global.Ct, map[string]interface{}{
+	_, _, err := global.Client.Collection("notification/"+userId).Add(global.Ct, map[string]interface{}{
 		"title": m.Notification.Title,
 		"body":  m.Notification.Body,
 	})
@@ -24,7 +25,10 @@ func AddToDatastore(m message) {
 func GetAllNotifications(ctx context.Context) ([]*model.FirestoreMessage, error) {
 
 	var firestoreResp []*model.FirestoreMessage
-	iter := global.Client.Collection("notification").Documents(ctx)
+	claims, _ := GetClaimsFromContext(ctx)
+	email_creator := claims["email"].(string)
+	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
+	iter := global.Client.Collection("notification/" + userId).Documents(ctx)
 	var resp []map[string]interface{}
 	for {
 		doc, err := iter.Next()

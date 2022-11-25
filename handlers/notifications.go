@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"encoding/base64"
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
@@ -38,7 +39,9 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	if err != nil {
 		log.Printf("Unable to create cache %v", err)
 	}
-
+	claims, _ := GetClaimsFromContext(ctx)
+	email_creator := claims["email"].(string)
+	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
 	cache = cacheVar
 
 	s := skeleton{
@@ -50,7 +53,7 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 		Notification: s,
 		To:           token,
 	}
-	AddToDatastore(m)
+	AddToDatastore(m, userId)
 
 	dataJson, err := json.Marshal(m)
 
@@ -133,4 +136,12 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 
 	m.Unlock()
 
+}
+
+func GetClaimsFromContext(ctx context.Context) (map[string]interface{}, error) {
+	customClaims := ctx.Value("zclaims").(map[string]interface{})
+	if customClaims == nil {
+		return make(map[string]interface{}), fmt.Errorf("custom claims not found. Unauthorized user")
+	}
+	return customClaims, nil
 }
