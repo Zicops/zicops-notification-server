@@ -9,8 +9,10 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph"
 	"github.com/zicops/zicops-notification-server/graph/generated"
+
 	"github.com/zicops/zicops-notification-server/jwt"
 )
 
@@ -21,6 +23,7 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
+
 	router := chi.NewRouter()
 	router.Use(middleware.Heartbeat("/healthz"))
 	router.Use(Middleware())
@@ -28,6 +31,7 @@ func main() {
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 	router.Handle("/query", srv)
 	log.Fatal(http.ListenAndServe(":"+port, router))
+	defer global.Client.Close()
 }
 
 func Middleware() func(http.Handler) http.Handler {

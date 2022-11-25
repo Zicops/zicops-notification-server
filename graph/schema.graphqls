@@ -1,18 +1,22 @@
 input NotificationInput {
   title: String!
   body: String!
-  token : String!
 }
 
 type Notification {
   statuscode: String!
 }
 
+type FirestoreMessage {
+  title: String!
+  body: String!
+}
 
 type Mutation {
   sendNotification(notification: NotificationInput!): Notification!
 }
 
 type Query {
-  dummy(name: String): String
+  getAll: [FirestoreMessage]
+
 }

@@ -2,6 +2,11 @@
 
 package model
 
+type FirestoreMessage struct {
+	Title string `json:"title"`
+	Body  string `json:"body"`
+}
+
 type Notification struct {
 	Statuscode string `json:"statuscode"`
 }
@@ -9,5 +14,4 @@ type Notification struct {
 type NotificationInput struct {
 	Title string `json:"title"`
 	Body  string `json:"body"`
-	Token string `json:"token"`
 }

@@ -22,9 +22,14 @@ func (r *mutationResolver) SendNotification(ctx context.Context, notification mo
 	return resp, err
 }
 
-// Dummy is the resolver for the dummy field.
-func (r *queryResolver) Dummy(ctx context.Context, name *string) (*string, error) {
-	return name, nil
+// GetAll is the resolver for the getAll field.
+func (r *queryResolver) GetAll(ctx context.Context) ([]*model.FirestoreMessage, error) {
+	resp, err := handlers.GetAllNotifications(ctx)
+	if err != nil {
+		log.Println("Error receiving notification list")
+		return nil, err
+	}
+	return resp, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
