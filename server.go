@@ -6,14 +6,13 @@ import (
 	"net/http"
 	"os"
 
-	//firebase "firebase.google.com/go"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph"
 	"github.com/zicops/zicops-notification-server/graph/generated"
 
-	//"github.com/zicops/zicops-notification-server/handlers"
 	"github.com/zicops/zicops-notification-server/jwt"
 )
 
@@ -26,7 +25,7 @@ func main() {
 	}
 
 	router := chi.NewRouter()
-
+	router.Use(middleware.Heartbeat("/healthz"))
 	router.Use(Middleware())
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))

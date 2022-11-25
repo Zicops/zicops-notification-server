@@ -2,11 +2,10 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 
 	"github.com/zicops/zicops-notification-server/global"
-	//"github.com/zicops/zicops-notification-server/graph/model"
+	"github.com/zicops/zicops-notification-server/graph/model"
 	"google.golang.org/api/iterator"
 )
 
@@ -22,9 +21,9 @@ func AddToDatastore(m message) {
 	}
 }
 
-func GetAllNotifications(ctx context.Context) (string, error) {
+func GetAllNotifications(ctx context.Context) ([]*model.FirestoreMessage, error) {
 
-	//firestoreResp := &model.FirestoreMessage{}
+	var firestoreResp []*model.FirestoreMessage
 	iter := global.Client.Collection("notification").Documents(ctx)
 	var resp []map[string]interface{}
 	for {
@@ -34,14 +33,19 @@ func GetAllNotifications(ctx context.Context) (string, error) {
 		}
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
-			return "", err
+			return firestoreResp, err
 		}
 		resp = append(resp, doc.Data())
 	}
-	res, err := json.Marshal(resp)
-	if err != nil {
-		log.Printf("Got error while converting response to JSON")
+
+	for _, v := range resp {
+		tmp := &model.FirestoreMessage{
+			Body:  v["body"].(string),
+			Title: v["title"].(string),
+		}
+		//log.Println(tmp.Body, "      ", tmp.Title)
+		firestoreResp = append(firestoreResp, tmp)
 	}
 
-	return string(res), nil
+	return firestoreResp, nil
 }

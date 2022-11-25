@@ -43,6 +43,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	FirestoreMessage struct {
+		Body  func(childComplexity int) int
+		Title func(childComplexity int) int
+	}
+
 	Mutation struct {
 		SendNotification func(childComplexity int, notification model.NotificationInput) int
 	}
@@ -60,7 +65,7 @@ type MutationResolver interface {
 	SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error)
 }
 type QueryResolver interface {
-	GetAll(ctx context.Context) (*string, error)
+	GetAll(ctx context.Context) ([]*model.FirestoreMessage, error)
 }
 
 type executableSchema struct {
@@ -77,6 +82,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "FirestoreMessage.body":
+		if e.complexity.FirestoreMessage.Body == nil {
+			break
+		}
+
+		return e.complexity.FirestoreMessage.Body(childComplexity), true
+
+	case "FirestoreMessage.title":
+		if e.complexity.FirestoreMessage.Title == nil {
+			break
+		}
+
+		return e.complexity.FirestoreMessage.Title(childComplexity), true
 
 	case "Mutation.sendNotification":
 		if e.complexity.Mutation.SendNotification == nil {
@@ -182,17 +201,17 @@ type Notification {
   statuscode: String!
 }
 
-#type FirestoreMessage {
-#  body: String!
-#  title: String!
-#}
+type FirestoreMessage {
+  title: String!
+  body: String!
+}
 
 type Mutation {
   sendNotification(notification: NotificationInput!): Notification!
 }
 
 type Query {
-  getAll: String
+  getAll: [FirestoreMessage]
 
 }`, BuiltIn: false},
 }
@@ -269,6 +288,94 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _FirestoreMessage_title(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FirestoreMessage_title(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FirestoreMessage_title(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FirestoreMessage",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FirestoreMessage_body(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FirestoreMessage_body(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Body, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FirestoreMessage_body(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FirestoreMessage",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_sendNotification(ctx, field)
@@ -396,9 +503,9 @@ func (ec *executionContext) _Query_getAll(ctx context.Context, field graphql.Col
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.([]*model.FirestoreMessage)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOFirestoreMessage2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getAll(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -408,7 +515,13 @@ func (ec *executionContext) fieldContext_Query_getAll(ctx context.Context, field
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "title":
+				return ec.fieldContext_FirestoreMessage_title(ctx, field)
+			case "body":
+				return ec.fieldContext_FirestoreMessage_body(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FirestoreMessage", field.Name)
 		},
 	}
 	return fc, nil
@@ -2360,6 +2473,41 @@ func (ec *executionContext) unmarshalInputNotificationInput(ctx context.Context,
 
 // region    **************************** object.gotpl ****************************
 
+var firestoreMessageImplementors = []string{"FirestoreMessage"}
+
+func (ec *executionContext) _FirestoreMessage(ctx context.Context, sel ast.SelectionSet, obj *model.FirestoreMessage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, firestoreMessageImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FirestoreMessage")
+		case "title":
+
+			out.Values[i] = ec._FirestoreMessage_title(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "body":
+
+			out.Values[i] = ec._FirestoreMessage_body(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -3133,6 +3281,54 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOFirestoreMessage2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx context.Context, sel ast.SelectionSet, v []*model.FirestoreMessage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOFirestoreMessage2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOFirestoreMessage2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx context.Context, sel ast.SelectionSet, v *model.FirestoreMessage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FirestoreMessage(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

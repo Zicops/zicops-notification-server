@@ -8,7 +8,6 @@ import (
 	firestore "cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 
-	//"github.com/zicops/zicops-notification-server/handlers"
 	lib "github.com/zicops/zicops-notification-server/lib"
 	"google.golang.org/api/option"
 )
@@ -20,7 +19,7 @@ var (
 )
 
 func init() {
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "firebase-key.json")
+	//os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "firebase-key.json")
 	serviceAccountZicops := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if serviceAccountZicops == "" {
 		log.Printf("failed to get right credentials for course creator")

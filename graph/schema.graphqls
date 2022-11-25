@@ -7,12 +7,16 @@ type Notification {
   statuscode: String!
 }
 
+type FirestoreMessage {
+  title: String!
+  body: String!
+}
 
 type Mutation {
   sendNotification(notification: NotificationInput!): Notification!
 }
 
 type Query {
-  getAll: String
+  getAll: [FirestoreMessage]
 
 }
