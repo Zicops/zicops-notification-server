@@ -31,7 +31,8 @@ func GetAllNotifications(ctx context.Context, pageStart int, pageSize int) ([]*m
 	claims, _ := GetClaimsFromContext(ctx)
 	email_creator := claims["email"].(string)
 	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
-	iter := global.Client.Collection("notification/"+userId).OrderBy("created_at", firestore.Desc).StartAt(pageStart).EndAt(pageStart + pageSize).Documents(ctx)
+	start := pageStart * pageSize // 0 * 10 = 0 , 1 * 10 = 10 , 2 * 10 = 20
+	iter := global.Client.Collection("notification/"+userId).OrderBy("created_at", firestore.Desc).StartAt(start).EndAt(start + pageSize).Documents(ctx)
 	var resp []map[string]interface{}
 	for {
 		doc, err := iter.Next()
