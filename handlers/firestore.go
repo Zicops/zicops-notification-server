@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"log"
+	"strconv"
 
 	"cloud.google.com/go/firestore"
 	"github.com/zicops/zicops-notification-server/global"
@@ -46,9 +47,9 @@ func GetAllNotifications(ctx context.Context, pageStart int, pageSize int) ([]*m
 
 	for _, v := range resp {
 		tmp := &model.FirestoreMessage{
-			Body:  v["body"].(string),
-			Title: v["title"].(string),
-			CreatedAt: v["created_at"].(string),
+			Body:      v["body"].(string),
+			Title:     v["title"].(string),
+			CreatedAt: strconv.FormatInt(v["created_at"].(int64), 10),
 		}
 		//log.Println(tmp.Body, "      ", tmp.Title)
 		firestoreResp = append(firestoreResp, tmp)

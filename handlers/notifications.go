@@ -20,9 +20,9 @@ import (
 )
 
 type message struct {
-	Notification skeleton  `json:"notification"`
-	To           string    `json:"to"`
-	CreatedAt    time.Time `json:"created_at"`
+	Notification skeleton `json:"notification"`
+	To           string   `json:"to"`
+	CreatedAt    int64    `json:"created_at"`
 }
 
 type skeleton struct {
@@ -53,7 +53,7 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	m := message{
 		Notification: s,
 		To:           token,
-		CreatedAt:    time.Now(),
+		CreatedAt:    time.Now().Unix(),
 	}
 	AddToDatastore(m, userId)
 
