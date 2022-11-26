@@ -3,8 +3,9 @@
 package model
 
 type FirestoreMessage struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title     string `json:"title"`
+	Body      string `json:"body"`
+	CreatedAt string `json:"createdAt"`
 }
 
 type Notification struct {

@@ -12,7 +12,6 @@ import (
 	"github.com/zicops/zicops-notification-server/handlers"
 )
 
-// SendNotification is the resolver for the sendNotification field.
 func (r *mutationResolver) SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
 	resp, err := handlers.SendNotification(ctx, notification)
 	if err != nil {
@@ -22,9 +21,8 @@ func (r *mutationResolver) SendNotification(ctx context.Context, notification mo
 	return resp, err
 }
 
-// GetAll is the resolver for the getAll field.
-func (r *queryResolver) GetAll(ctx context.Context) ([]*model.FirestoreMessage, error) {
-	resp, err := handlers.GetAllNotifications(ctx)
+func (r *queryResolver) GetAll(ctx context.Context, pageStart int, pageSize int) ([]*model.FirestoreMessage, error) {
+	resp, err := handlers.GetAllNotifications(ctx, pageStart, pageSize)
 	if err != nil {
 		log.Println("Error receiving notification list")
 		return nil, err

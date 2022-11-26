@@ -10,6 +10,7 @@ type Notification {
 type FirestoreMessage {
   title: String!
   body: String!
+  createdAt: String!
 }
 
 type Mutation {
@@ -17,6 +18,5 @@ type Mutation {
 }
 
 type Query {
-  getAll: [FirestoreMessage]
-
+  getAll(pageStart: Int!, pageSize: Int!): [FirestoreMessage!]!
 }
