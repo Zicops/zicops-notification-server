@@ -47,6 +47,7 @@ type ComplexityRoot struct {
 		Body      func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
 		Title     func(childComplexity int) int
+		UserID    func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -91,7 +92,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.FirestoreMessage.Body(childComplexity), true
 
-	case "FirestoreMessage.createdAt":
+	case "FirestoreMessage.created_at":
 		if e.complexity.FirestoreMessage.CreatedAt == nil {
 			break
 		}
@@ -104,6 +105,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FirestoreMessage.Title(childComplexity), true
+
+	case "FirestoreMessage.user_id":
+		if e.complexity.FirestoreMessage.UserID == nil {
+			break
+		}
+
+		return e.complexity.FirestoreMessage.UserID(childComplexity), true
 
 	case "Mutation.sendNotification":
 		if e.complexity.Mutation.SendNotification == nil {
@@ -212,7 +220,8 @@ type Notification {
 type FirestoreMessage {
   title: String!
   body: String!
-  createdAt: Int!
+  created_at: Int!
+  user_id: String!
 }
 
 type Mutation {
@@ -391,7 +400,7 @@ func (ec *executionContext) _FirestoreMessage_body(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirestoreMessage_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirestoreMessage_created_at(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -424,6 +433,41 @@ func (ec *executionContext) _FirestoreMessage_createdAt(ctx context.Context, fie
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirestoreMessage_user_id(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirestoreMessage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1871,9 +1915,19 @@ func (ec *executionContext) _FirestoreMessage(ctx context.Context, sel ast.Selec
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "createdAt":
+		case "created_at":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._FirestoreMessage_createdAt(ctx, field, obj)
+				return ec._FirestoreMessage_created_at(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "user_id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._FirestoreMessage_user_id(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

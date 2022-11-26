@@ -5,7 +5,8 @@ package model
 type FirestoreMessage struct {
 	Title     string `json:"title"`
 	Body      string `json:"body"`
-	CreatedAt int    `json:"createdAt"`
+	CreatedAt int    `json:"created_at"`
+	UserID    string `json:"user_id"`
 }
 
 type Notification struct {
