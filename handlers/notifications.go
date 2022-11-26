@@ -17,6 +17,7 @@ import (
 	"github.com/allegro/bigcache/v3"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
+	"github.com/zicops/zicops-notification-server/jwt"
 )
 
 type message struct {
@@ -141,9 +142,7 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 }
 
 func GetClaimsFromContext(ctx context.Context) (map[string]interface{}, error) {
-	customClaims := ctx.Value("zclaims").(map[string]interface{})
-	if customClaims == nil {
-		return make(map[string]interface{}), fmt.Errorf("custom claims not found. Unauthorized user")
-	}
-	return customClaims, nil
+	token := ctx.Value("token").(string)
+	claims, err := jwt.GetClaims(token)
+	return claims, err
 }
