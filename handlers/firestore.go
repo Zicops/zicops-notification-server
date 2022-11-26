@@ -46,10 +46,11 @@ func GetAllNotifications(ctx context.Context, pageStart int, pageSize int) ([]*m
 	}
 
 	for _, v := range resp {
+		createdAt, _ := strconv.ParseInt(v["created_at"].(string), 10, 64)
 		tmp := &model.FirestoreMessage{
 			Body:      v["body"].(string),
 			Title:     v["title"].(string),
-			CreatedAt: strconv.FormatInt(v["created_at"].(int64), 10),
+			CreatedAt: int(createdAt),
 		}
 		//log.Println(tmp.Body, "      ", tmp.Title)
 		firestoreResp = append(firestoreResp, tmp)

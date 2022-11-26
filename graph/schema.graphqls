@@ -10,7 +10,7 @@ type Notification {
 type FirestoreMessage {
   title: String!
   body: String!
-  createdAt: String!
+  createdAt: Int!
 }
 
 type Mutation {

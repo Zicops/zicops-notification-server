@@ -212,7 +212,7 @@ type Notification {
 type FirestoreMessage {
   title: String!
   body: String!
-  createdAt: String!
+  createdAt: Int!
 }
 
 type Mutation {
@@ -421,9 +421,9 @@ func (ec *executionContext) _FirestoreMessage_createdAt(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
