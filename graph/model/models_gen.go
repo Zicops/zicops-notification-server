@@ -3,10 +3,11 @@
 package model
 
 type FirestoreMessage struct {
-	Title     string `json:"title"`
-	Body      string `json:"body"`
-	CreatedAt int    `json:"created_at"`
-	UserID    string `json:"user_id"`
+	Title            string  `json:"title"`
+	Body             string  `json:"body"`
+	CreatedAt        int     `json:"created_at"`
+	UserID           string  `json:"user_id"`
+	PrevPageSnapShot *string `json:"prevPageSnapShot"`
 }
 
 type Notification struct {

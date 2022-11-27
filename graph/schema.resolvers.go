@@ -21,8 +21,8 @@ func (r *mutationResolver) SendNotification(ctx context.Context, notification mo
 	return resp, err
 }
 
-func (r *queryResolver) GetAll(ctx context.Context, pageStart int, pageSize int) ([]*model.FirestoreMessage, error) {
-	resp, err := handlers.GetAllNotifications(ctx, pageStart, pageSize)
+func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int) ([]*model.FirestoreMessage, error) {
+	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize)
 	if err != nil {
 		log.Println("Error receiving notification list")
 		return nil, err

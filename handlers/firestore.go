@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"log"
-	"strconv"
 
 	"cloud.google.com/go/firestore"
 	"github.com/zicops/zicops-notification-server/global"
@@ -26,15 +25,22 @@ func AddToDatastore(m message, userId string) {
 	}
 }
 
-func GetAllNotifications(ctx context.Context, pageStart int, pageSize int) ([]*model.FirestoreMessage, error) {
+func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int) ([]*model.FirestoreMessage, error) {
 
 	var firestoreResp []*model.FirestoreMessage
 	claims, _ := GetClaimsFromContext(ctx)
 	email_creator := claims["email"].(string)
 	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
-	start := pageStart * pageSize // 0 * 10 = 0 , 1 * 10 = 10 , 2 * 10 = 20
-	iter := global.Client.Collection("notification").Where("UserID", "==", userId).OrderBy("CreatedAt", firestore.Desc).StartAt(start).EndAt(start + pageSize).Documents(ctx)
+	startAfter := prevPageSnapShot
+	var iter *firestore.DocumentIterator
+	if startAfter == "" {
+		iter = global.Client.Collection("notification").Where("UserID", "==", userId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
+
+	} else {
+		iter = global.Client.Collection("notification").Where("UserID", "==", userId).OrderBy("CreatedAt", firestore.Desc).StartAfter(startAfter).Limit(pageSize).Documents(ctx)
+	}
 	var resp []map[string]interface{}
+	var lastDoc *firestore.DocumentSnapshot
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -44,16 +50,18 @@ func GetAllNotifications(ctx context.Context, pageStart int, pageSize int) ([]*m
 			log.Fatalf("Failed to iterate: %v", err)
 			return firestoreResp, err
 		}
+		lastDoc = doc
 		resp = append(resp, doc.Data())
 	}
-
+	prevSeenData := lastDoc.Ref.ID
 	for _, v := range resp {
-		createdAt, _ := strconv.ParseInt(v["created_at"].(string), 10, 64)
+		createdAt, _ := v["CreatedAt"].(int64)
 		tmp := &model.FirestoreMessage{
-			Body:      v["body"].(string),
-			Title:     v["title"].(string),
-			CreatedAt: int(createdAt),
-			UserID:    v["user_id"].(string),
+			Body:             v["Body"].(string),
+			Title:            v["Title"].(string),
+			CreatedAt:        int(createdAt),
+			UserID:           v["UserID"].(string),
+			PrevPageSnapShot: &prevSeenData,
 		}
 		//log.Println(tmp.Body, "      ", tmp.Title)
 		firestoreResp = append(firestoreResp, tmp)

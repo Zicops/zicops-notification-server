@@ -44,10 +44,11 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	FirestoreMessage struct {
-		Body      func(childComplexity int) int
-		CreatedAt func(childComplexity int) int
-		Title     func(childComplexity int) int
-		UserID    func(childComplexity int) int
+		Body             func(childComplexity int) int
+		CreatedAt        func(childComplexity int) int
+		PrevPageSnapShot func(childComplexity int) int
+		Title            func(childComplexity int) int
+		UserID           func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -59,7 +60,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetAll func(childComplexity int, pageStart int, pageSize int) int
+		GetAll func(childComplexity int, prevPageSnapShot string, pageSize int) int
 	}
 }
 
@@ -67,7 +68,7 @@ type MutationResolver interface {
 	SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error)
 }
 type QueryResolver interface {
-	GetAll(ctx context.Context, pageStart int, pageSize int) ([]*model.FirestoreMessage, error)
+	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int) ([]*model.FirestoreMessage, error)
 }
 
 type executableSchema struct {
@@ -98,6 +99,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FirestoreMessage.CreatedAt(childComplexity), true
+
+	case "FirestoreMessage.prevPageSnapShot":
+		if e.complexity.FirestoreMessage.PrevPageSnapShot == nil {
+			break
+		}
+
+		return e.complexity.FirestoreMessage.PrevPageSnapShot(childComplexity), true
 
 	case "FirestoreMessage.title":
 		if e.complexity.FirestoreMessage.Title == nil {
@@ -142,7 +150,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAll(childComplexity, args["pageStart"].(int), args["pageSize"].(int)), true
+		return e.complexity.Query.GetAll(childComplexity, args["prevPageSnapShot"].(string), args["pageSize"].(int)), true
 
 	}
 	return 0, false
@@ -222,6 +230,7 @@ type FirestoreMessage {
   body: String!
   created_at: Int!
   user_id: String!
+  prevPageSnapShot: String
 }
 
 type Mutation {
@@ -229,7 +238,7 @@ type Mutation {
 }
 
 type Query {
-  getAll(pageStart: Int!, pageSize: Int!): [FirestoreMessage!]!
+  getAll(prevPageSnapShot: String!, pageSize: Int!): [FirestoreMessage!]!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -271,15 +280,15 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_getAll_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["pageStart"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageStart"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["prevPageSnapShot"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("prevPageSnapShot"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["pageStart"] = arg0
+	args["prevPageSnapShot"] = arg0
 	var arg1 int
 	if tmp, ok := rawArgs["pageSize"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageSize"))
@@ -470,6 +479,38 @@ func (ec *executionContext) _FirestoreMessage_user_id(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _FirestoreMessage_prevPageSnapShot(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirestoreMessage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PrevPageSnapShot, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -572,7 +613,7 @@ func (ec *executionContext) _Query_getAll(ctx context.Context, field graphql.Col
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAll(rctx, args["pageStart"].(int), args["pageSize"].(int))
+		return ec.resolvers.Query().GetAll(rctx, args["prevPageSnapShot"].(string), args["pageSize"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1935,6 +1976,13 @@ func (ec *executionContext) _FirestoreMessage(ctx context.Context, sel ast.Selec
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "prevPageSnapShot":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._FirestoreMessage_prevPageSnapShot(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

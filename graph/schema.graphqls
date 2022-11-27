@@ -12,6 +12,7 @@ type FirestoreMessage {
   body: String!
   created_at: Int!
   user_id: String!
+  prevPageSnapShot: String
 }
 
 type Mutation {
@@ -19,5 +20,5 @@ type Mutation {
 }
 
 type Query {
-  getAll(pageStart: Int!, pageSize: Int!): [FirestoreMessage!]!
+  getAll(prevPageSnapShot: String!, pageSize: Int!): [FirestoreMessage!]!
 }
