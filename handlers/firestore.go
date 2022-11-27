@@ -25,7 +25,7 @@ func AddToDatastore(m message, userId string) {
 	}
 }
 
-func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int) ([]*model.FirestoreMessage, error) {
+func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error) {
 
 	var firestoreResp []*model.FirestoreMessage
 	claims, _ := GetClaimsFromContext(ctx)
@@ -48,7 +48,7 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 		}
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
-			return firestoreResp, err
+			return nil, err
 		}
 		lastDoc = doc
 		resp = append(resp, doc.Data())
@@ -57,15 +57,16 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 	for _, v := range resp {
 		createdAt, _ := v["CreatedAt"].(int64)
 		tmp := &model.FirestoreMessage{
-			Body:             v["Body"].(string),
-			Title:            v["Title"].(string),
-			CreatedAt:        int(createdAt),
-			UserID:           v["UserID"].(string),
-			PrevPageSnapShot: &prevSeenData,
+			Body:      v["Body"].(string),
+			Title:     v["Title"].(string),
+			CreatedAt: int(createdAt),
+			UserID:    v["UserID"].(string),
 		}
 		//log.Println(tmp.Body, "      ", tmp.Title)
 		firestoreResp = append(firestoreResp, tmp)
 	}
-
-	return firestoreResp, nil
+	return &model.PaginatedNotifications{
+		Messages:         firestoreResp,
+		NextPageSnapShot: &prevSeenData,
+	}, nil
 }

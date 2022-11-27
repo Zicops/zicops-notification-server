@@ -44,11 +44,10 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	FirestoreMessage struct {
-		Body             func(childComplexity int) int
-		CreatedAt        func(childComplexity int) int
-		PrevPageSnapShot func(childComplexity int) int
-		Title            func(childComplexity int) int
-		UserID           func(childComplexity int) int
+		Body      func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		Title     func(childComplexity int) int
+		UserID    func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -57,6 +56,11 @@ type ComplexityRoot struct {
 
 	Notification struct {
 		Statuscode func(childComplexity int) int
+	}
+
+	PaginatedNotifications struct {
+		Messages         func(childComplexity int) int
+		NextPageSnapShot func(childComplexity int) int
 	}
 
 	Query struct {
@@ -68,7 +72,7 @@ type MutationResolver interface {
 	SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error)
 }
 type QueryResolver interface {
-	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int) ([]*model.FirestoreMessage, error)
+	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error)
 }
 
 type executableSchema struct {
@@ -99,13 +103,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FirestoreMessage.CreatedAt(childComplexity), true
-
-	case "FirestoreMessage.prevPageSnapShot":
-		if e.complexity.FirestoreMessage.PrevPageSnapShot == nil {
-			break
-		}
-
-		return e.complexity.FirestoreMessage.PrevPageSnapShot(childComplexity), true
 
 	case "FirestoreMessage.title":
 		if e.complexity.FirestoreMessage.Title == nil {
@@ -139,6 +136,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Notification.Statuscode(childComplexity), true
+
+	case "PaginatedNotifications.messages":
+		if e.complexity.PaginatedNotifications.Messages == nil {
+			break
+		}
+
+		return e.complexity.PaginatedNotifications.Messages(childComplexity), true
+
+	case "PaginatedNotifications.nextPageSnapShot":
+		if e.complexity.PaginatedNotifications.NextPageSnapShot == nil {
+			break
+		}
+
+		return e.complexity.PaginatedNotifications.NextPageSnapShot(childComplexity), true
 
 	case "Query.getAll":
 		if e.complexity.Query.GetAll == nil {
@@ -230,15 +241,18 @@ type FirestoreMessage {
   body: String!
   created_at: Int!
   user_id: String!
-  prevPageSnapShot: String
 }
 
+type PaginatedNotifications {
+  messages: [FirestoreMessage]!
+  nextPageSnapShot: String
+}
 type Mutation {
   sendNotification(notification: NotificationInput!): Notification!
 }
 
 type Query {
-  getAll(prevPageSnapShot: String!, pageSize: Int!): [FirestoreMessage!]!
+  getAll(prevPageSnapShot: String!, pageSize: Int!): PaginatedNotifications!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -479,38 +493,6 @@ func (ec *executionContext) _FirestoreMessage_user_id(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirestoreMessage_prevPageSnapShot(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "FirestoreMessage",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PrevPageSnapShot, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -588,6 +570,73 @@ func (ec *executionContext) _Notification_statuscode(ctx context.Context, field 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _PaginatedNotifications_messages(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedNotifications) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PaginatedNotifications",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Messages, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.FirestoreMessage)
+	fc.Result = res
+	return ec.marshalNFirestoreMessage2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PaginatedNotifications_nextPageSnapShot(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedNotifications) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PaginatedNotifications",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NextPageSnapShot, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_getAll(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -625,9 +674,9 @@ func (ec *executionContext) _Query_getAll(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.FirestoreMessage)
+	res := resTmp.(*model.PaginatedNotifications)
 	fc.Result = res
-	return ec.marshalNFirestoreMessage2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessageᚄ(ctx, field.Selections, res)
+	return ec.marshalNPaginatedNotifications2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPaginatedNotifications(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1976,13 +2025,6 @@ func (ec *executionContext) _FirestoreMessage(ctx context.Context, sel ast.Selec
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "prevPageSnapShot":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._FirestoreMessage_prevPageSnapShot(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2054,6 +2096,44 @@ func (ec *executionContext) _Notification(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var paginatedNotificationsImplementors = []string{"PaginatedNotifications"}
+
+func (ec *executionContext) _PaginatedNotifications(ctx context.Context, sel ast.SelectionSet, obj *model.PaginatedNotifications) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, paginatedNotificationsImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PaginatedNotifications")
+		case "messages":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PaginatedNotifications_messages(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "nextPageSnapShot":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PaginatedNotifications_nextPageSnapShot(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2570,7 +2650,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNFirestoreMessage2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessageᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.FirestoreMessage) graphql.Marshaler {
+func (ec *executionContext) marshalNFirestoreMessage2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx context.Context, sel ast.SelectionSet, v []*model.FirestoreMessage) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2594,7 +2674,7 @@ func (ec *executionContext) marshalNFirestoreMessage2ᚕᚖgithubᚗcomᚋzicops
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFirestoreMessage2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx, sel, v[i])
+			ret[i] = ec.marshalOFirestoreMessage2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2605,23 +2685,7 @@ func (ec *executionContext) marshalNFirestoreMessage2ᚕᚖgithubᚗcomᚋzicops
 	}
 	wg.Wait()
 
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
 	return ret
-}
-
-func (ec *executionContext) marshalNFirestoreMessage2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx context.Context, sel ast.SelectionSet, v *model.FirestoreMessage) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._FirestoreMessage(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
@@ -2656,6 +2720,20 @@ func (ec *executionContext) marshalNNotification2ᚖgithubᚗcomᚋzicopsᚋzico
 func (ec *executionContext) unmarshalNNotificationInput2githubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐNotificationInput(ctx context.Context, v interface{}) (model.NotificationInput, error) {
 	res, err := ec.unmarshalInputNotificationInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPaginatedNotifications2githubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPaginatedNotifications(ctx context.Context, sel ast.SelectionSet, v model.PaginatedNotifications) graphql.Marshaler {
+	return ec._PaginatedNotifications(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPaginatedNotifications2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPaginatedNotifications(ctx context.Context, sel ast.SelectionSet, v *model.PaginatedNotifications) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._PaginatedNotifications(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -2950,6 +3028,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOFirestoreMessage2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreMessage(ctx context.Context, sel ast.SelectionSet, v *model.FirestoreMessage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FirestoreMessage(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

@@ -12,13 +12,16 @@ type FirestoreMessage {
   body: String!
   created_at: Int!
   user_id: String!
-  prevPageSnapShot: String
 }
 
+type PaginatedNotifications {
+  messages: [FirestoreMessage]!
+  nextPageSnapShot: String
+}
 type Mutation {
   sendNotification(notification: NotificationInput!): Notification!
 }
 
 type Query {
-  getAll(prevPageSnapShot: String!, pageSize: Int!): [FirestoreMessage!]!
+  getAll(prevPageSnapShot: String!, pageSize: Int!): PaginatedNotifications!
 }
