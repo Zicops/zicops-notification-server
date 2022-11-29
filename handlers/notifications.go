@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	//"os"
 	"sync"
@@ -39,7 +40,7 @@ type respBody struct {
 	Multicast_id  int `json:"multicast_id"`
 	Success       int `json:"success"`
 	Failure       int `json:"failure"`
-	Canonical_ids int `json:"canonical_ids"`
+	Canonical_ids int `json:"canonical_id"`
 	Results       []results
 }
 
@@ -49,7 +50,7 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	global.Ct = ctx
 
 	fcm_token := fmt.Sprintf("%s", ctx.Value("fcm-token"))
-	log.Println(fcm_token)
+	//log.Println(fcm_token)
 
 	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
 	if err != nil {
@@ -84,8 +85,12 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 
 	data, _ := cache.Get(string(dataJson))
 	statusCode := ""
-	_ = json.Unmarshal(data, &statusCode)
+	err = json.Unmarshal(data, &statusCode)
+	if err != nil {
+		log.Println("Error while converting to json ", err)
+	}
 
+	//log.Println(statusCode)
 	return &model.Notification{
 		Statuscode: statusCode,
 	}, nil
@@ -148,8 +153,10 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 		log.Printf("Unable to send the notification %v", err)
 	}
 
+	code := strconv.Itoa(successCode.Success)
+
 	//marshalling it to send it to cache
-	res, err := json.Marshal(successCode.Success)
+	res, err := json.Marshal(code)
 	if err != nil {
 		//it means success is 0 i.e., unable to send request
 		var temp int = 0
@@ -165,6 +172,7 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 	if err != nil {
 		log.Printf(" Got error while setting the key %v", err)
 	}
+	//log.Println(successCode.Success)
 
 	m.Unlock()
 
