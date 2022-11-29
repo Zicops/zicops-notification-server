@@ -45,8 +45,16 @@ func Middleware() func(http.Handler) http.Handler {
 			// put it in context
 			ctx := context.WithValue(r.Context(), "token", token)
 
+			//get fcm token
+			fcm := r.Header.Get("fcm-token")
+			if fcm == "" {
+				http.Error(w, "Please mention fcm-token for sending Notification", http.StatusUnauthorized)
+			}
+			//put that in context
+			ctxFcm := context.WithValue(ctx, "fcm-token", fcm)
+
 			// and call the next with our new context
-			r = r.WithContext(ctx)
+			r = r.WithContext(ctxFcm)
 			next.ServeHTTP(w, r)
 		})
 	}

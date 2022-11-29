@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"log"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/zicops/zicops-notification-server/global"
@@ -11,18 +12,23 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func AddToDatastore(m message, userId string) {
+func AddToDatastore(ctx context.Context, m model.NotificationInput) (string, error) {
+
+	claims, _ := GetClaimsFromContext(ctx)
+	email_creator := claims["email"].(string)
+	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
 
 	//log.Println("Context in addToDatastore ", global.Ct)
 	_, _, err := global.Client.Collection("notification").Add(global.Ct, model.FirestoreMessage{
-		Title:     m.Notification.Title,
-		Body:      m.Notification.Body,
-		CreatedAt: int(m.CreatedAt),
+		Title:     m.Title,
+		Body:      m.Body,
+		CreatedAt: int(time.Now().Unix()),
 		UserID:    userId,
 	})
 	if err != nil {
 		log.Fatalf("Failed adding value to cloud firestore: %v", err)
 	}
+	return "Values added successfully", nil
 }
 
 func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error) {

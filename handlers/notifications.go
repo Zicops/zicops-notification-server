@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"encoding/base64"
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
@@ -48,15 +47,14 @@ var cache *bigcache.BigCache
 
 func SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
 	global.Ct = ctx
-	token := fmt.Sprintf("%s", ctx.Value("token"))
-	//log.Println(token)
+
+	fcm_token := fmt.Sprintf("%s", ctx.Value("fcm-token"))
+	log.Println(fcm_token)
+
 	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
 	if err != nil {
 		log.Printf("Unable to create cache %v", err)
 	}
-	claims, _ := GetClaimsFromContext(ctx)
-	email_creator := claims["email"].(string)
-	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
 	cache = cacheVar
 
 	s := skeleton{
@@ -66,11 +64,9 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 
 	m := message{
 		Notification: s,
-		To:           token,
+		To:           fcm_token,
 		CreatedAt:    time.Now().Unix(),
 	}
-	AddToDatastore(m, userId)
-
 	dataJson, err := json.Marshal(m)
 
 	if err != nil {
