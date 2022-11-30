@@ -12,6 +12,7 @@ import (
 	"github.com/zicops/zicops-notification-server/handlers"
 )
 
+// SendNotification is the resolver for the sendNotification field.
 func (r *mutationResolver) SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
 	resp, err := handlers.SendNotification(ctx, notification)
 	if err != nil {
@@ -21,6 +22,18 @@ func (r *mutationResolver) SendNotification(ctx context.Context, notification mo
 	return resp, err
 }
 
+// AddToFirestore is the resolver for the addToFirestore field.
+func (r *mutationResolver) AddToFirestore(ctx context.Context, message model.NotificationInput) (string, error) {
+	resp, err := handlers.AddToDatastore(ctx, message)
+
+	if err != nil {
+		log.Printf("Error adding data to firestore %v", err)
+		return "", err
+	}
+	return resp, nil
+}
+
+// GetAll is the resolver for the getAll field.
 func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error) {
 	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize)
 	if err != nil {

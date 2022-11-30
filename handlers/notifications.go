@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	//"os"
 	"sync"
 	"time"
 
-	"encoding/base64"
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
@@ -31,19 +32,30 @@ type skeleton struct {
 	Body  string `json:"body"`
 }
 
+type results struct {
+	MessageId string `json:"message_ids"`
+}
+
+type respBody struct {
+	Multicast_id  int `json:"multicast_id"`
+	Success       int `json:"success"`
+	Failure       int `json:"failure"`
+	Canonical_ids int `json:"canonical_id"`
+	Results       []results
+}
+
 var cache *bigcache.BigCache
 
 func SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
 	global.Ct = ctx
-	token := fmt.Sprintf("%s", ctx.Value("token"))
-	//log.Println(token)
+
+	fcm_token := fmt.Sprintf("%s", ctx.Value("fcm-token"))
+	//log.Println(fcm_token)
+
 	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
 	if err != nil {
 		log.Printf("Unable to create cache %v", err)
 	}
-	claims, _ := GetClaimsFromContext(ctx)
-	email_creator := claims["email"].(string)
-	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
 	cache = cacheVar
 
 	s := skeleton{
@@ -53,11 +65,9 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 
 	m := message{
 		Notification: s,
-		To:           token,
+		To:           fcm_token,
 		CreatedAt:    time.Now().Unix(),
 	}
-	AddToDatastore(m, userId)
-
 	dataJson, err := json.Marshal(m)
 
 	if err != nil {
@@ -75,8 +85,12 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 
 	data, _ := cache.Get(string(dataJson))
 	statusCode := ""
-	_ = json.Unmarshal(data, &statusCode)
+	err = json.Unmarshal(data, &statusCode)
+	if err != nil {
+		log.Println("Error while converting to json ", err)
+	}
 
+	//log.Println(statusCode)
 	return &model.Notification{
 		Statuscode: statusCode,
 	}, nil
@@ -124,18 +138,41 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 	if err != nil {
 		log.Printf("Error while getting response- %v", err)
 	}
-	log.Printf("Status code of our request is %v", resp.Status)
 
-	statusCode, err := json.Marshal(resp.Status)
+	//converting response received to bytes
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Got error while converting data to json %v", err)
+		log.Println("Unable to receive response to JSON")
 	}
 
-	//setting the response in cache
-	_ = cache.Set(string(dataJson), statusCode)
+	//getting success value from response body
+	var successCode respBody
+	err = json.Unmarshal(b, &successCode)
+	if err != nil {
+		//it means that we we don't have data according to respBody struct, i.e., instead of message_id, there are errors
+		log.Printf("Unable to send the notification %v", err)
+	}
+
+	code := strconv.Itoa(successCode.Success)
+
+	//marshalling it to send it to cache
+	res, err := json.Marshal(code)
+	if err != nil {
+		//it means success is 0 i.e., unable to send request
+		var temp int = 0
+		tempBytes, _ := json.Marshal(temp)
+
+		err = cache.Set(string(dataJson), tempBytes)
+		if err != nil {
+			log.Printf(" Got error while setting the key %v", err)
+		}
+	}
+
+	_ = cache.Set(string(dataJson), res)
 	if err != nil {
 		log.Printf(" Got error while setting the key %v", err)
 	}
+	//log.Println(successCode.Success)
 
 	m.Unlock()
 

@@ -20,6 +20,7 @@ type PaginatedNotifications {
 }
 type Mutation {
   sendNotification(notification: NotificationInput!): Notification!
+  addToFirestore(message: NotificationInput!):String!
 }
 
 type Query {
