@@ -23,7 +23,7 @@ func (r *mutationResolver) SendNotification(ctx context.Context, notification mo
 }
 
 // AddToFirestore is the resolver for the addToFirestore field.
-func (r *mutationResolver) AddToFirestore(ctx context.Context, message model.NotificationInput) (string, error) {
+func (r *mutationResolver) AddToFirestore(ctx context.Context, message []*model.FirestoreDataInput) (string, error) {
 	resp, err := handlers.AddToDatastore(ctx, message)
 
 	if err != nil {

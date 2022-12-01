@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
+	//"github.com/zicops/contracts/notificationz"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
 	"github.com/zicops/zicops-notification-server/jwt"
@@ -52,12 +53,48 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	fcm_token := fmt.Sprintf("%s", ctx.Value("fcm-token"))
 	//log.Println(fcm_token)
 
+	/*
+
+		claims, _ := GetClaimsFromContext(ctx)
+		email_creator := claims["email"].(string)
+		userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
+
+		_, _, err := global.Client.Collection("token").Add(global.Ct, map[string] interface{}{
+			"UserID": userId,
+			"FCM-Token": fcm_token,
+		})
+		if err != nil {
+			log.Fatalf("Failed adding value to cloud firestore: %v", err)
+		}
+
+
+		when calling
+		iter = global.Client.Collection("token").Where("UserID", "==", userId).Documents(ctx)
+		var resp []map[string]interface{}
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Failed to iterate: %v", err)
+				return nil, err
+			}
+			temp := doc.Data()
+
+			token = temp["FCM-Token"]
+
+		}
+
+	*/
+
 	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
 	if err != nil {
 		log.Printf("Unable to create cache %v", err)
 	}
 	cache = cacheVar
 
+	//s := notificationz.Skeleton and so on
 	s := skeleton{
 		Title: notification.Title,
 		Body:  notification.Body,
@@ -152,6 +189,7 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 		//it means that we we don't have data according to respBody struct, i.e., instead of message_id, there are errors
 		log.Printf("Unable to send the notification %v", err)
 	}
+	log.Println(successCode.Results[0].MessageId)
 
 	code := strconv.Itoa(successCode.Success)
 
