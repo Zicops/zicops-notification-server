@@ -14,13 +14,29 @@ type FirestoreMessage {
   user_id: String!
 }
 
+type FirestoreData {
+  title: String!
+  body: String!
+  created_at: Int!
+  user_id: String!
+  is_read: Boolean!
+}
+
+input FirestoreDataInput {
+  title: String!
+  body: String!
+  user_id: String!
+  is_read: Boolean!
+  message_id: String!
+}
+
 type PaginatedNotifications {
   messages: [FirestoreMessage]!
   nextPageSnapShot: String
 }
 type Mutation {
   sendNotification(notification: NotificationInput!): Notification!
-  addToFirestore(message: NotificationInput!):String!
+  addToFirestore(message: [FirestoreDataInput]!):String!
 }
 
 type Query {

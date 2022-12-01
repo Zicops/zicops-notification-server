@@ -2,6 +2,22 @@
 
 package model
 
+type FirestoreData struct {
+	Title     string `json:"title"`
+	Body      string `json:"body"`
+	CreatedAt int    `json:"created_at"`
+	UserID    string `json:"user_id"`
+	IsRead    bool   `json:"is_read"`
+}
+
+type FirestoreDataInput struct {
+	Title     string `json:"title"`
+	Body      string `json:"body"`
+	UserID    string `json:"user_id"`
+	IsRead    bool   `json:"is_read"`
+	MessageID string `json:"message_id"`
+}
+
 type FirestoreMessage struct {
 	Title     string `json:"title"`
 	Body      string `json:"body"`
