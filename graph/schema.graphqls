@@ -1,6 +1,7 @@
 input NotificationInput {
   title: String!
   body: String!
+  emails: [String]!
 }
 
 type Notification {
@@ -35,8 +36,9 @@ type PaginatedNotifications {
   nextPageSnapShot: String
 }
 type Mutation {
-  sendNotification(notification: NotificationInput!): Notification!
+  sendNotification(notification: NotificationInput!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
+  getFCMToken: String!
 }
 
 type Query {

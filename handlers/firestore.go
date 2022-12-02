@@ -19,6 +19,7 @@ func AddToDatastore(ctx context.Context, m []*model.FirestoreDataInput) (string,
 	email_creator := claims["email"].(string)
 	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
 
+	log.Println(email_creator)
 	for _, message := range m {
 
 		//if person has not yet seen the notification, i.e., notification as of now is just pushed to frontend

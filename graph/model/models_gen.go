@@ -30,8 +30,9 @@ type Notification struct {
 }
 
 type NotificationInput struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title  string    `json:"title"`
+	Body   string    `json:"body"`
+	Emails []*string `json:"emails"`
 }
 
 type PaginatedNotifications struct {
