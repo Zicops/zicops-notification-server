@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -13,9 +12,12 @@ import (
 	"sync"
 	"time"
 
+	"encoding/base64"
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
+	"google.golang.org/api/iterator"
+
 	//"github.com/zicops/contracts/notificationz"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
@@ -47,46 +49,13 @@ type respBody struct {
 
 var cache *bigcache.BigCache
 
-func SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
+func SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error) {
 	global.Ct = ctx
+	var res []*model.Notification
 
-	fcm_token := fmt.Sprintf("%s", ctx.Value("fcm-token"))
-	//log.Println(fcm_token)
-
-	/*
-
-		claims, _ := GetClaimsFromContext(ctx)
-		email_creator := claims["email"].(string)
-		userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
-
-		_, _, err := global.Client.Collection("token").Add(global.Ct, map[string] interface{}{
-			"UserID": userId,
-			"FCM-Token": fcm_token,
-		})
-		if err != nil {
-			log.Fatalf("Failed adding value to cloud firestore: %v", err)
-		}
-
-
-		when calling
-		iter = global.Client.Collection("token").Where("UserID", "==", userId).Documents(ctx)
-		var resp []map[string]interface{}
-		for {
-			doc, err := iter.Next()
-			if err == iterator.Done {
-				break
-			}
-			if err != nil {
-				log.Fatalf("Failed to iterate: %v", err)
-				return nil, err
-			}
-			temp := doc.Data()
-
-			token = temp["FCM-Token"]
-
-		}
-
-	*/
+	//channel for sending data to cache function
+	ch := make(chan []byte, 100)
+	var mut sync.Mutex
 
 	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
 	if err != nil {
@@ -100,37 +69,50 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 		Body:  notification.Body,
 	}
 
-	m := message{
-		Notification: s,
-		To:           fcm_token,
-		CreatedAt:    time.Now().Unix(),
+	//now we need to get fcm-token for given email, i.e., from email we need userID and using that we will get fcm-token
+	for _, email := range notification.Emails {
+		userId := base64.StdEncoding.EncodeToString([]byte(*email))
+
+		var resp []map[string]interface{}
+		//using this user id we will get fcm tokens
+		iter := global.Client.Collection("tokens").Where("UserID", "==", userId).Documents(ctx)
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Failed to iterate: %v", err)
+				return nil, err
+			}
+
+			resp = append(resp, doc.Data())
+		}
+		//now we have all the instances where userID is of person in the mail, and their fcm token/tokens alongside
+		for _, v := range resp {
+			m := message{
+				Notification: s,
+				To:           v["FCM-token"].(string),
+				CreatedAt:    time.Now().Unix(),
+			}
+			//log.Println("FCM-token for given userID ", v["FCM-token"].(string))
+			dataJson, err := json.Marshal(m)
+
+			if err != nil {
+				log.Printf("Unable to convert to JSON: %v", err)
+			}
+			ch <- dataJson
+			go sendToCache(ch, &mut)
+
+			time.Sleep(1 * time.Second)
+			data, _ := cache.Get(string(dataJson))
+			res = append(res, &model.Notification{
+				Statuscode: string(data),
+			})
+		}
+
 	}
-	dataJson, err := json.Marshal(m)
-
-	if err != nil {
-		log.Printf("Unable to convert to JSON: %v", err)
-	}
-
-	//sending data to cache function
-	ch := make(chan []byte, 100)
-	var mut sync.Mutex
-
-	ch <- dataJson
-	go sendToCache(ch, &mut)
-
-	time.Sleep(2 * time.Second)
-
-	data, _ := cache.Get(string(dataJson))
-	statusCode := ""
-	err = json.Unmarshal(data, &statusCode)
-	if err != nil {
-		log.Println("Error while converting to json ", err)
-	}
-
-	//log.Println(statusCode)
-	return &model.Notification{
-		Statuscode: statusCode,
-	}, nil
+	return res, nil
 
 }
 
@@ -189,27 +171,12 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 		//it means that we we don't have data according to respBody struct, i.e., instead of message_id, there are errors
 		log.Printf("Unable to send the notification %v", err)
 	}
-	log.Println(successCode.Results[0].MessageId)
-
-	code := strconv.Itoa(successCode.Success)
-
-	//marshalling it to send it to cache
-	res, err := json.Marshal(code)
-	if err != nil {
-		//it means success is 0 i.e., unable to send request
-		var temp int = 0
-		tempBytes, _ := json.Marshal(temp)
-
-		err = cache.Set(string(dataJson), tempBytes)
-		if err != nil {
-			log.Printf(" Got error while setting the key %v", err)
-		}
-	}
-
-	_ = cache.Set(string(dataJson), res)
+	//log.Println("Key", string(dataJson))
+	err = cache.Set(string(dataJson), []byte(strconv.Itoa(successCode.Success)))
 	if err != nil {
 		log.Printf(" Got error while setting the key %v", err)
 	}
+
 	//log.Println(successCode.Success)
 
 	m.Unlock()

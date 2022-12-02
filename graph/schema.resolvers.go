@@ -13,7 +13,7 @@ import (
 )
 
 // SendNotification is the resolver for the sendNotification field.
-func (r *mutationResolver) SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
+func (r *mutationResolver) SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error) {
 	resp, err := handlers.SendNotification(ctx, notification)
 	if err != nil {
 		log.Printf("Error sending notification %v", err)
@@ -28,6 +28,16 @@ func (r *mutationResolver) AddToFirestore(ctx context.Context, message []*model.
 
 	if err != nil {
 		log.Printf("Error adding data to firestore %v", err)
+		return "", err
+	}
+	return resp, nil
+}
+
+// GetFCMToken is the resolver for the getFCMToken field.
+func (r *mutationResolver) GetFCMToken(ctx context.Context) (string, error) {
+	resp, err := handlers.GetFCMToken(ctx)
+	if err != nil {
+		log.Printf("Unable to map UserID with FCM token")
 		return "", err
 	}
 	return resp, nil
