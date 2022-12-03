@@ -171,6 +171,7 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 		//it means that we we don't have data according to respBody struct, i.e., instead of message_id, there are errors
 		log.Printf("Unable to send the notification %v", err)
 	}
+	//log.Println(successCode.Results[0].MessageId)
 	//log.Println("Key", string(dataJson))
 	err = cache.Set(string(dataJson), []byte(strconv.Itoa(successCode.Success)))
 	if err != nil {

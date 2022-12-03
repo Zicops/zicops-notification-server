@@ -38,7 +38,6 @@ func AddToDatastore(ctx context.Context, m []*model.FirestoreDataInput) (string,
 
 		} else if message.IsRead {
 			//means person has clicked on the notification and we want to update the value
-
 			//if value does not exist then give error
 			_, err := global.Client.Collection("notification").Doc(message.MessageID).Get(ctx)
 			if status.Code(err) == codes.NotFound {
