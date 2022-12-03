@@ -1,7 +1,7 @@
 input NotificationInput {
   title: String!
   body: String!
-  emails: [String]!
+  user_id: [String]!
 }
 
 type Notification {

@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"encoding/base64"
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
@@ -70,8 +69,8 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	}
 
 	//now we need to get fcm-token for given email, i.e., from email we need userID and using that we will get fcm-token
-	for _, email := range notification.Emails {
-		userId := base64.StdEncoding.EncodeToString([]byte(*email))
+	for _, userId := range notification.UserID {
+		//userId := base64.StdEncoding.EncodeToString([]byte(*email))
 
 		var resp []map[string]interface{}
 		//using this user id we will get fcm tokens
