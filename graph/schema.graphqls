@@ -13,6 +13,7 @@ type FirestoreMessage {
   body: String!
   created_at: Int!
   user_id: String!
+  message_id: String!
 }
 
 type FirestoreData {
@@ -21,6 +22,7 @@ type FirestoreData {
   created_at: Int!
   user_id: String!
   is_read: Boolean!
+  message_id: String!
 }
 
 input FirestoreDataInput {
