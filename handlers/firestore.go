@@ -25,10 +25,11 @@ func AddToDatastore(ctx context.Context, m []*model.FirestoreDataInput) (string,
 		//if person has not yet seen the notification, i.e., notification as of now is just pushed to frontend
 		if !message.IsRead {
 			//we will add it to datastore
-			_, err := global.Client.Collection("notification").Doc(message.MessageID).Set(ctx, model.FirestoreData{
+			_, _, err := global.Client.Collection("notification").Add(ctx, model.FirestoreData{
 				Title:     message.Title,
 				Body:      message.Body,
 				CreatedAt: int(time.Now().Unix()),
+				MessageID: message.MessageID,
 				UserID:    userId,
 				IsRead:    false,
 			})
@@ -97,6 +98,7 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 			Title:     v["Title"].(string),
 			CreatedAt: int(createdAt),
 			UserID:    v["UserID"].(string),
+			MessageID: v["MessageID"].(string),
 		}
 		//log.Println(tmp.Body, "      ", tmp.Title)
 		firestoreResp = append(firestoreResp, tmp)
