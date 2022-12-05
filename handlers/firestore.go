@@ -25,7 +25,7 @@ func AddToDatastore(ctx context.Context, m []*model.FirestoreDataInput) (string,
 		//if person has not yet seen the notification, i.e., notification as of now is just pushed to frontend
 		if !message.IsRead {
 			//we will add it to datastore
-			_, _, err := global.Client.Collection("notification").Add(ctx, model.FirestoreData{
+			_, err := global.Client.Collection("notification").Doc(message.MessageID).Set(global.Ct, model.FirestoreData{
 				Title:     message.Title,
 				Body:      message.Body,
 				CreatedAt: int(time.Now().Unix()),
