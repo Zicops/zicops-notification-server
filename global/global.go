@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "zicops-cc.json")
+	//os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "zicops-cc.json")
 	serviceAccountZicops := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if serviceAccountZicops == "" {
 		log.Printf("failed to get right credentials for course creator")
