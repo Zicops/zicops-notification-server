@@ -56,6 +56,7 @@ type ComplexityRoot struct {
 	FirestoreMessage struct {
 		Body      func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
+		IsRead    func(childComplexity int) int
 		MessageID func(childComplexity int) int
 		Title     func(childComplexity int) int
 		UserID    func(childComplexity int) int
@@ -160,6 +161,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FirestoreMessage.CreatedAt(childComplexity), true
+
+	case "FirestoreMessage.is_read":
+		if e.complexity.FirestoreMessage.IsRead == nil {
+			break
+		}
+
+		return e.complexity.FirestoreMessage.IsRead(childComplexity), true
 
 	case "FirestoreMessage.message_id":
 		if e.complexity.FirestoreMessage.MessageID == nil {
@@ -332,6 +340,7 @@ type FirestoreMessage {
   created_at: Int!
   user_id: String!
   message_id: String!
+  is_read: Boolean!
 }
 
 type FirestoreData {
@@ -346,7 +355,6 @@ type FirestoreData {
 input FirestoreDataInput {
   title: String!
   body: String!
-  user_id: String!
   is_read: Boolean!
   message_id: String!
 }
@@ -962,6 +970,50 @@ func (ec *executionContext) fieldContext_FirestoreMessage_message_id(ctx context
 	return fc, nil
 }
 
+func (ec *executionContext) _FirestoreMessage_is_read(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FirestoreMessage_is_read(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsRead, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FirestoreMessage_is_read(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FirestoreMessage",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_sendNotification(ctx, field)
 	if err != nil {
@@ -1213,6 +1265,8 @@ func (ec *executionContext) fieldContext_PaginatedNotifications_messages(ctx con
 				return ec.fieldContext_FirestoreMessage_user_id(ctx, field)
 			case "message_id":
 				return ec.fieldContext_FirestoreMessage_message_id(ctx, field)
+			case "is_read":
+				return ec.fieldContext_FirestoreMessage_is_read(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type FirestoreMessage", field.Name)
 		},
@@ -3231,7 +3285,7 @@ func (ec *executionContext) unmarshalInputFirestoreDataInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "body", "user_id", "is_read", "message_id"}
+	fieldsInOrder := [...]string{"title", "body", "is_read", "message_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3251,14 +3305,6 @@ func (ec *executionContext) unmarshalInputFirestoreDataInput(ctx context.Context
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
 			it.Body, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "user_id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-			it.UserID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3440,6 +3486,13 @@ func (ec *executionContext) _FirestoreMessage(ctx context.Context, sel ast.Selec
 		case "message_id":
 
 			out.Values[i] = ec._FirestoreMessage_message_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "is_read":
+
+			out.Values[i] = ec._FirestoreMessage_is_read(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

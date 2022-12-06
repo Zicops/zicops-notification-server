@@ -14,7 +14,6 @@ type FirestoreData struct {
 type FirestoreDataInput struct {
 	Title     string `json:"title"`
 	Body      string `json:"body"`
-	UserID    string `json:"user_id"`
 	IsRead    bool   `json:"is_read"`
 	MessageID string `json:"message_id"`
 }
@@ -25,6 +24,7 @@ type FirestoreMessage struct {
 	CreatedAt int    `json:"created_at"`
 	UserID    string `json:"user_id"`
 	MessageID string `json:"message_id"`
+	IsRead    bool   `json:"is_read"`
 }
 
 type Notification struct {
