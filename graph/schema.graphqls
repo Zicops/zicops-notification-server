@@ -1,6 +1,7 @@
 input NotificationInput {
   title: String!
   body: String!
+  user_id: [String]!
 }
 
 type Notification {
@@ -12,6 +13,24 @@ type FirestoreMessage {
   body: String!
   created_at: Int!
   user_id: String!
+  message_id: String!
+  is_read: Boolean!
+}
+
+type FirestoreData {
+  title: String!
+  body: String!
+  created_at: Int!
+  user_id: String!
+  is_read: Boolean!
+  message_id: String!
+}
+
+input FirestoreDataInput {
+  title: String!
+  body: String!
+  is_read: Boolean!
+  message_id: String!
 }
 
 type PaginatedNotifications {
@@ -19,8 +38,9 @@ type PaginatedNotifications {
   nextPageSnapShot: String
 }
 type Mutation {
-  sendNotification(notification: NotificationInput!): Notification!
-  addToFirestore(message: NotificationInput!):String!
+  sendNotification(notification: NotificationInput!): [Notification]!
+  addToFirestore(message: [FirestoreDataInput]!):String!
+  getFCMToken: String!
 }
 
 type Query {

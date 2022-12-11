@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -17,6 +16,9 @@ import (
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
+	"google.golang.org/api/iterator"
+
+	//"github.com/zicops/contracts/notificationz"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
 	"github.com/zicops/zicops-notification-server/jwt"
@@ -47,16 +49,13 @@ type respBody struct {
 
 var cache *bigcache.BigCache
 
-func SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
+func SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error) {
 	global.Ct = ctx
-	claims, err := GetClaimsFromContext(ctx)
-	if err != nil {
-		log.Printf("Unable to get claims from context: %v", err)
-	}
-	email_creator := claims["email"].(string)
-	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
-	fcm_token := fmt.Sprintf("%s", ctx.Value("fcm-token"))
-	//log.Println(fcm_token)
+	var res []*model.Notification
+
+	//channel for sending data to cache function
+	ch := make(chan []byte, 100)
+	var mut sync.Mutex
 
 	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
 	if err != nil {
@@ -64,6 +63,7 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	}
 	cache = cacheVar
 
+	//s := notificationz.Skeleton and so on
 	s := skeleton{
 		Title: notification.Title,
 		Body:  notification.Body,
@@ -75,49 +75,50 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 		log.Printf("Unable to get token from datastore: %v", err)
 	}
 
-	saved_token := fcm_token_saved != ""
-	if fcm_token == "" && saved_token {
-		fcm_token = fcm_token_saved
-	}
-	m := message{
-		Notification: s,
-		To:           fcm_token,
-		CreatedAt:    time.Now().Unix(),
-	}
-	dataJson, err := json.Marshal(m)
+	//now we need to get fcm-token for given email, i.e., from email we need userID and using that we will get fcm-token
+	for _, userId := range notification.UserID {
+		//userId := base64.StdEncoding.EncodeToString([]byte(*email))
 
-	if err != nil {
-		log.Printf("Unable to convert to JSON: %v", err)
-	}
-	var tokenSave TokenSave
-	tokenSave.Token = fcm_token
-	tokenSave.UserID = userId
-	if token_provided && !saved_token {
-		_, err = AddToDatastoreFCMToken(ctx, tokenSave)
-	}
-	if err != nil {
-		log.Printf("Unable to save token to datastore: %v", err)
-	}
-	//sending data to cache function
-	ch := make(chan []byte, 100)
-	var mut sync.Mutex
+		var resp []map[string]interface{}
+		//using this user id we will get fcm tokens
+		iter := global.Client.Collection("tokens").Where("UserID", "==", userId).Documents(ctx)
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Failed to iterate: %v", err)
+				return nil, err
+			}
 
-	ch <- dataJson
-	go sendToCache(ch, &mut)
+			resp = append(resp, doc.Data())
+		}
+		//now we have all the instances where userID is of person in the mail, and their fcm token/tokens alongside
+		for _, v := range resp {
+			m := message{
+				Notification: s,
+				To:           v["FCM-token"].(string),
+				CreatedAt:    time.Now().Unix(),
+			}
+			//log.Println("FCM-token for given userID ", v["FCM-token"].(string))
+			dataJson, err := json.Marshal(m)
 
-	time.Sleep(2 * time.Second)
+			if err != nil {
+				log.Printf("Unable to convert to JSON: %v", err)
+			}
+			ch <- dataJson
+			go sendToCache(ch, &mut)
 
-	data, _ := cache.Get(string(dataJson))
-	statusCode := ""
-	err = json.Unmarshal(data, &statusCode)
-	if err != nil {
-		log.Println("Error while converting to json ", err)
+			time.Sleep(1 * time.Second)
+			data, _ := cache.Get(string(dataJson))
+			res = append(res, &model.Notification{
+				Statuscode: string(data),
+			})
+		}
+
 	}
-
-	//log.Println(statusCode)
-	return &model.Notification{
-		Statuscode: statusCode,
-	}, nil
+	return res, nil
 
 }
 
@@ -176,26 +177,13 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 		//it means that we we don't have data according to respBody struct, i.e., instead of message_id, there are errors
 		log.Printf("Unable to send the notification %v", err)
 	}
-
-	code := strconv.Itoa(successCode.Success)
-
-	//marshalling it to send it to cache
-	res, err := json.Marshal(code)
-	if err != nil {
-		//it means success is 0 i.e., unable to send request
-		var temp int = 0
-		tempBytes, _ := json.Marshal(temp)
-
-		err = cache.Set(string(dataJson), tempBytes)
-		if err != nil {
-			log.Printf(" Got error while setting the key %v", err)
-		}
-	}
-
-	_ = cache.Set(string(dataJson), res)
+	//log.Println(successCode.Results[0].MessageId)
+	//log.Println("Key", string(dataJson))
+	err = cache.Set(string(dataJson), []byte(strconv.Itoa(successCode.Success)))
 	if err != nil {
 		log.Printf(" Got error while setting the key %v", err)
 	}
+
 	//log.Println(successCode.Success)
 
 	m.Unlock()

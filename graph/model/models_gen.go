@@ -2,11 +2,29 @@
 
 package model
 
+type FirestoreData struct {
+	Title     string `json:"title"`
+	Body      string `json:"body"`
+	CreatedAt int    `json:"created_at"`
+	UserID    string `json:"user_id"`
+	IsRead    bool   `json:"is_read"`
+	MessageID string `json:"message_id"`
+}
+
+type FirestoreDataInput struct {
+	Title     string `json:"title"`
+	Body      string `json:"body"`
+	IsRead    bool   `json:"is_read"`
+	MessageID string `json:"message_id"`
+}
+
 type FirestoreMessage struct {
 	Title     string `json:"title"`
 	Body      string `json:"body"`
 	CreatedAt int    `json:"created_at"`
 	UserID    string `json:"user_id"`
+	MessageID string `json:"message_id"`
+	IsRead    bool   `json:"is_read"`
 }
 
 type Notification struct {
@@ -14,8 +32,9 @@ type Notification struct {
 }
 
 type NotificationInput struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title  string    `json:"title"`
+	Body   string    `json:"body"`
+	UserID []*string `json:"user_id"`
 }
 
 type PaginatedNotifications struct {
