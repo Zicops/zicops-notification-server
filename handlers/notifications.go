@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"encoding/base64"
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
@@ -48,7 +49,12 @@ var cache *bigcache.BigCache
 
 func SendNotification(ctx context.Context, notification model.NotificationInput) (*model.Notification, error) {
 	global.Ct = ctx
-
+	claims, err := GetClaimsFromContext(ctx)
+	if err != nil {
+		log.Printf("Unable to get claims from context: %v", err)
+	}
+	email_creator := claims["email"].(string)
+	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
 	fcm_token := fmt.Sprintf("%s", ctx.Value("fcm-token"))
 	//log.Println(fcm_token)
 
@@ -62,7 +68,17 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 		Title: notification.Title,
 		Body:  notification.Body,
 	}
+	token_provided := fcm_token != ""
 
+	fcm_token_saved, err := GetFCMToken(ctx, userId)
+	if err != nil {
+		log.Printf("Unable to get token from datastore: %v", err)
+	}
+
+	saved_token := fcm_token_saved != ""
+	if fcm_token == "" && saved_token {
+		fcm_token = fcm_token_saved
+	}
 	m := message{
 		Notification: s,
 		To:           fcm_token,
@@ -73,7 +89,15 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	if err != nil {
 		log.Printf("Unable to convert to JSON: %v", err)
 	}
-
+	var tokenSave TokenSave
+	tokenSave.Token = fcm_token
+	tokenSave.UserID = userId
+	if token_provided && !saved_token {
+		_, err = AddToDatastoreFCMToken(ctx, tokenSave)
+	}
+	if err != nil {
+		log.Printf("Unable to save token to datastore: %v", err)
+	}
 	//sending data to cache function
 	ch := make(chan []byte, 100)
 	var mut sync.Mutex

@@ -31,6 +31,35 @@ func AddToDatastore(ctx context.Context, m model.NotificationInput) (string, err
 	return "Values added successfully", nil
 }
 
+type TokenSave struct {
+	Token  string `json:"token"`
+	UserID string `json:"user_id"`
+}
+
+func AddToDatastoreFCMToken(ctx context.Context, m TokenSave) (string, error) {
+	_, _, err := global.Client.Collection("tokens").Add(global.Ct, m)
+	if err != nil {
+		log.Fatalf("Failed adding value to cloud firestore: %v", err)
+	}
+	return "Values added successfully", nil
+}
+
+func GetFCMToken(ctx context.Context, userId string) (string, error) {
+	iter := global.Client.Collection("tokens").Where("UserID", "==", userId).Documents(ctx)
+	var resp []map[string]interface{}
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Fatalf("Failed to iterate: %v", err)
+			return "", err
+		}
+		resp = append(resp, doc.Data())
+	}
+	return resp[0]["Token"].(string), nil
+}
 func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error) {
 
 	var firestoreResp []*model.FirestoreMessage
