@@ -75,22 +75,6 @@ func AddToDatastoreFCMToken(ctx context.Context, m TokenSave) (string, error) {
 	return "Values added successfully", nil
 }
 
-func GetFCMToken(ctx context.Context, userId string) (string, error) {
-	iter := global.Client.Collection("tokens").Where("UserID", "==", userId).Documents(ctx)
-	var resp []map[string]interface{}
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
-			return "", err
-		}
-		resp = append(resp, doc.Data())
-	}
-	return resp[0]["Token"].(string), nil
-}
 func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error) {
 
 	var firestoreResp []*model.FirestoreMessage

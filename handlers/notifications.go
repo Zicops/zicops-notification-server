@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"encoding/base64"
 	"encoding/json"
 
 	"github.com/allegro/bigcache/v3"
@@ -67,12 +66,6 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	s := skeleton{
 		Title: notification.Title,
 		Body:  notification.Body,
-	}
-	token_provided := fcm_token != ""
-
-	fcm_token_saved, err := GetFCMToken(ctx, userId)
-	if err != nil {
-		log.Printf("Unable to get token from datastore: %v", err)
 	}
 
 	//now we need to get fcm-token for given email, i.e., from email we need userID and using that we will get fcm-token
