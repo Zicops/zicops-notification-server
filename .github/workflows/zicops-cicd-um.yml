@@ -48,12 +48,6 @@ jobs:
       - name: Install Helm
         run: |
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-      - name: Deploy to zicops dev
-        run: |
-          gcloud container clusters get-credentials $GKE_CLUSTER_1 \
-            --zone $GKE_ZONE_1 \
-            --project $PROJECT_ID
-          helm upgrade zicops-notification-server k8s/zicops-notification-server --install --wait --atomic
       - name: Deploy to zicops production
         run: |
           gcloud container clusters get-credentials $GKE_CLUSTER_2 \
