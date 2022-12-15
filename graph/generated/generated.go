@@ -65,6 +65,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AddToFirestore   func(childComplexity int, message []*model.FirestoreDataInput) int
 		GetFCMToken      func(childComplexity int) int
+		SendEmail        func(childComplexity int, to string, userName string, from string, senderName string, body string, templateID string) int
 		SendNotification func(childComplexity int, notification model.NotificationInput) int
 	}
 
@@ -85,6 +86,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error)
 	AddToFirestore(ctx context.Context, message []*model.FirestoreDataInput) (string, error)
+	SendEmail(ctx context.Context, to string, userName string, from string, senderName string, body string, templateID string) (string, error)
 	GetFCMToken(ctx context.Context) (string, error)
 }
 type QueryResolver interface {
@@ -208,6 +210,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.GetFCMToken(childComplexity), true
+
+	case "Mutation.sendEmail":
+		if e.complexity.Mutation.SendEmail == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sendEmail_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SendEmail(childComplexity, args["to"].(string), args["user_name"].(string), args["from"].(string), args["sender_name"].(string), args["body"].(string), args["template_id"].(string)), true
 
 	case "Mutation.sendNotification":
 		if e.complexity.Mutation.SendNotification == nil {
@@ -363,9 +377,11 @@ type PaginatedNotifications {
   messages: [FirestoreMessage]!
   nextPageSnapShot: String
 }
+
 type Mutation {
   sendNotification(notification: NotificationInput!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
+  sendEmail(to: String!, user_name: String!, from: String!, sender_name:String!, body: String!, template_id: String!): String!
   getFCMToken: String!
 }
 
@@ -391,6 +407,66 @@ func (ec *executionContext) field_Mutation_addToFirestore_args(ctx context.Conte
 		}
 	}
 	args["message"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_sendEmail_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["user_name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_name"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user_name"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["from"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["from"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["sender_name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sender_name"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["sender_name"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["body"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["body"] = arg4
+	var arg5 string
+	if tmp, ok := rawArgs["template_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("template_id"))
+		arg5, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["template_id"] = arg5
 	return args, nil
 }
 
@@ -1122,6 +1198,61 @@ func (ec *executionContext) fieldContext_Mutation_addToFirestore(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addToFirestore_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_sendEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_sendEmail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SendEmail(rctx, fc.Args["to"].(string), fc.Args["user_name"].(string), fc.Args["from"].(string), fc.Args["sender_name"].(string), fc.Args["body"].(string), fc.Args["template_id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_sendEmail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_sendEmail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3540,6 +3671,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addToFirestore(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sendEmail":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sendEmail(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {

@@ -33,6 +33,15 @@ func (r *mutationResolver) AddToFirestore(ctx context.Context, message []*model.
 	return resp, nil
 }
 
+// SendEmail is the resolver for the sendEmail field.
+func (r *mutationResolver) SendEmail(ctx context.Context, to string, userName string, from string, senderName string, body string, templateID string) (string, error) {
+	resp, err := handlers.SendEmail(ctx, to, userName, from, senderName, body, templateID)
+	if err != nil {
+		return "", err
+	}
+	return resp, nil
+}
+
 // GetFCMToken is the resolver for the getFCMToken field.
 func (r *mutationResolver) GetFCMToken(ctx context.Context) (string, error) {
 	resp, err := handlers.GetFCMToken(ctx)
