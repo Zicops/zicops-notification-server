@@ -8,6 +8,7 @@ require (
 	github.com/99designs/gqlgen v0.17.20
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-chi/chi v1.5.4
+	github.com/sendgrid/sendgrid-go v3.12.0+incompatible
 	github.com/vektah/gqlparser/v2 v2.5.1
 	golang.org/x/oauth2 v0.2.0
 	google.golang.org/api v0.103.0
@@ -32,7 +33,6 @@ require (
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
-	github.com/sendgrid/sendgrid-go v3.12.0+incompatible
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect

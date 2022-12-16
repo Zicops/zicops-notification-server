@@ -34,10 +34,11 @@ func (r *mutationResolver) AddToFirestore(ctx context.Context, message []*model.
 }
 
 // SendEmail is the resolver for the sendEmail field.
-func (r *mutationResolver) SendEmail(ctx context.Context, to string, userName string, from string, senderName string, body string, templateID string) (string, error) {
-	resp, err := handlers.SendEmail(ctx, to, userName, from, senderName, body, templateID)
+func (r *mutationResolver) SendEmail(ctx context.Context, to []*string, senderName string, body []*string, templateID string) ([]string, error) {
+	resp, err := handlers.SendEmail(ctx, to, senderName, body, templateID)
 	if err != nil {
-		return "", err
+		var temp string
+		return []string{temp}, err
 	}
 	return resp, nil
 }
