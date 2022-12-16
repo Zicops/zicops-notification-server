@@ -12,11 +12,8 @@ import (
 )
 
 // "d-bf691d7c93794afca36c326cd032ccbf"
-func SendEmail(ctx context.Context, to []*string, sender_name string, body []*string, template_id string) ([]string, error) {
+func SendEmail(ctx context.Context, to []*string, sender_name string, user_name []*string, body string, template_id string) ([]string, error) {
 
-	if len(body) != len(to) {
-		return []string{"Body and sender's mail are not equal"}, nil
-	}
 	var result []string
 	fromMail := mail.NewEmail(sender_name, "no_reply@zicops.com")
 	for k, mails := range to {
@@ -28,12 +25,19 @@ func SendEmail(ctx context.Context, to []*string, sender_name string, body []*st
 		p.AddTos(toMail)
 		// Now we will set the data from the body and put it in some interface, decode it and put it in p.SetDynamicTemplateData
 		var bodyData map[string]string
-		err := json.Unmarshal([]byte(*body[k]), &bodyData)
+		err := json.Unmarshal([]byte(body), &bodyData)
 		if err != nil {
 			log.Println(err)
 			return []string{""}, nil
 		}
-		log.Println("Values for k and v are as given")
+		//log.Println("Values for k and v are as given")
+		if len(user_name) != 0 {
+			if user_name[k] == nil {
+				p.SetDynamicTemplateData("user_name", "")
+			} else {
+				p.SetDynamicTemplateData("user_name", user_name[k])
+			}
+		}
 		for k, v := range bodyData {
 			//log.Println(k, "    ", v)
 			p.SetDynamicTemplateData(k, v)
@@ -46,10 +50,8 @@ func SendEmail(ctx context.Context, to []*string, sender_name string, body []*st
 		response, err := sendgrid.API(request)
 		if err != nil {
 			log.Println(err)
-		} else {
-
-			log.Println(response.Body)
-			log.Println(response.StatusCode)
+		} else if response.StatusCode == 202 {
+			log.Println("Email sent successfully")
 		}
 
 		result = append(result, strconv.Itoa(response.StatusCode))
@@ -83,8 +85,8 @@ func SendEmail(ctx context.Context, to []*string, sender_name string, body []*st
 		}`)
 			log.Println(os.Getenv("SENDGRID_API_KEY"))
 			response, err := sendgrid.API(request)
-	*/
 
+	*/
 	return result, nil
 
 }

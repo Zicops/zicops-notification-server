@@ -65,7 +65,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AddToFirestore   func(childComplexity int, message []*model.FirestoreDataInput) int
 		GetFCMToken      func(childComplexity int) int
-		SendEmail        func(childComplexity int, to []*string, senderName string, body []*string, templateID string) int
+		SendEmail        func(childComplexity int, to []*string, senderName string, userName []*string, body string, templateID string) int
 		SendNotification func(childComplexity int, notification model.NotificationInput) int
 	}
 
@@ -86,7 +86,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error)
 	AddToFirestore(ctx context.Context, message []*model.FirestoreDataInput) (string, error)
-	SendEmail(ctx context.Context, to []*string, senderName string, body []*string, templateID string) ([]string, error)
+	SendEmail(ctx context.Context, to []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
 	GetFCMToken(ctx context.Context) (string, error)
 }
 type QueryResolver interface {
@@ -221,7 +221,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SendEmail(childComplexity, args["to_"].([]*string), args["sender_name"].(string), args["body"].([]*string), args["template_id"].(string)), true
+		return e.complexity.Mutation.SendEmail(childComplexity, args["to_"].([]*string), args["sender_name"].(string), args["user_name"].([]*string), args["body"].(string), args["template_id"].(string)), true
 
 	case "Mutation.sendNotification":
 		if e.complexity.Mutation.SendNotification == nil {
@@ -381,7 +381,7 @@ type PaginatedNotifications {
 type Mutation {
   sendNotification(notification: NotificationInput!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
-  sendEmail(to_: [String]!, sender_name:String!, body: [String]!, template_id: String!): [String!]
+  sendEmail(to_: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   getFCMToken: String!
 }
 
@@ -432,23 +432,32 @@ func (ec *executionContext) field_Mutation_sendEmail_args(ctx context.Context, r
 	}
 	args["sender_name"] = arg1
 	var arg2 []*string
-	if tmp, ok := rawArgs["body"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
-		arg2, err = ec.unmarshalNString2ᚕᚖstring(ctx, tmp)
+	if tmp, ok := rawArgs["user_name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_name"))
+		arg2, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["body"] = arg2
+	args["user_name"] = arg2
 	var arg3 string
-	if tmp, ok := rawArgs["template_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("template_id"))
+	if tmp, ok := rawArgs["body"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
 		arg3, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["template_id"] = arg3
+	args["body"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["template_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("template_id"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["template_id"] = arg4
 	return args, nil
 }
 
@@ -1200,7 +1209,7 @@ func (ec *executionContext) _Mutation_sendEmail(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SendEmail(rctx, fc.Args["to_"].([]*string), fc.Args["sender_name"].(string), fc.Args["body"].([]*string), fc.Args["template_id"].(string))
+		return ec.resolvers.Mutation().SendEmail(rctx, fc.Args["to_"].([]*string), fc.Args["sender_name"].(string), fc.Args["user_name"].([]*string), fc.Args["body"].(string), fc.Args["template_id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4641,6 +4650,38 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 		if e == graphql.Null {
 			return graphql.Null
 		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret
