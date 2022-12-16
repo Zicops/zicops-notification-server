@@ -24,6 +24,7 @@ func main() {
 		port = defaultPort
 	}
 
+	os.Setenv("SENDGRID_API_KEY", "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")
 	router := chi.NewRouter()
 	router.Use(middleware.Heartbeat("/healthz"))
 	router.Use(Middleware())

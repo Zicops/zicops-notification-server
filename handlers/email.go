@@ -12,33 +12,50 @@ import (
 )
 
 // "d-bf691d7c93794afca36c326cd032ccbf"
-func SendEmail(ctx context.Context, to string, user_name string, from string, sender_name string, body string, template_id string) (string, error) {
+func SendEmail(ctx context.Context, to []*string, sender_name string, body []*string, template_id string) ([]string, error) {
 
-	fromMail := mail.NewEmail(sender_name, from)
-	toMail := mail.NewEmail(user_name, to)
-	mailSetup := mail.NewV3Mail()
-	mailSetup.SetFrom(fromMail)
-	mailSetup.SetTemplateID(template_id)
-	p := mail.NewPersonalization()
-	p.AddTos(toMail)
-	// Now we will set the data from the body and put it in some interface, decode it and put it in p.SetDynamicTemplateData
-	var bodyData map[string]string
-	err := json.Unmarshal([]byte(body), &bodyData)
-	if err != nil {
-		log.Println(err)
-		return "", nil
+	if len(body) != len(to) {
+		return []string{"Body and sender's mail are not equal"}, nil
 	}
-	log.Println("Values for k and v are as given")
-	for k, v := range bodyData {
-		//log.Println(k, "    ", v)
-		p.SetDynamicTemplateData(k, v)
+	var result []string
+	fromMail := mail.NewEmail(sender_name, "no_reply@zicops.com")
+	for k, mails := range to {
+		toMail := mail.NewEmail("", *mails)
+		mailSetup := mail.NewV3Mail()
+		mailSetup.SetFrom(fromMail)
+		mailSetup.SetTemplateID(template_id)
+		p := mail.NewPersonalization()
+		p.AddTos(toMail)
+		// Now we will set the data from the body and put it in some interface, decode it and put it in p.SetDynamicTemplateData
+		var bodyData map[string]string
+		err := json.Unmarshal([]byte(*body[k]), &bodyData)
+		if err != nil {
+			log.Println(err)
+			return []string{""}, nil
+		}
+		log.Println("Values for k and v are as given")
+		for k, v := range bodyData {
+			//log.Println(k, "    ", v)
+			p.SetDynamicTemplateData(k, v)
+		}
+		mailSetup.AddPersonalizations(p)
+		request := sendgrid.GetRequest(os.Getenv("SENDGRID_API_KEY"), "/v3/mail/send", "https://api.sendgrid.com")
+		request.Method = "POST"
+		var Body = mail.GetRequestBody(mailSetup)
+		request.Body = Body
+		response, err := sendgrid.API(request)
+		if err != nil {
+			log.Println(err)
+		} else {
+
+			log.Println(response.Body)
+			log.Println(response.StatusCode)
+		}
+
+		result = append(result, strconv.Itoa(response.StatusCode))
+
 	}
-	mailSetup.AddPersonalizations(p)
-	request := sendgrid.GetRequest(os.Getenv("SENDGRID_API_KEY"), "/v3/mail/send", "https://api.sendgrid.com")
-	request.Method = "POST"
-	var Body = mail.GetRequestBody(mailSetup)
-	request.Body = Body
-	response, err := sendgrid.API(request)
+
 	/*
 
 			request := sendgrid.GetRequest(os.Getenv("SENDGRID_API_KEY"), "/v3/mail/send", "https://api.sendgrid.com")
@@ -67,14 +84,7 @@ func SendEmail(ctx context.Context, to string, user_name string, from string, se
 			log.Println(os.Getenv("SENDGRID_API_KEY"))
 			response, err := sendgrid.API(request)
 	*/
-	if err != nil {
-		log.Println(err)
-	} else {
 
-		log.Println(response.Body)
-		log.Println(response.StatusCode)
-
-	}
-	return strconv.Itoa(response.StatusCode), nil
+	return result, nil
 
 }
