@@ -18,6 +18,7 @@ import (
 	"google.golang.org/api/iterator"
 
 	//"github.com/zicops/contracts/notificationz"
+	"github.com/segmentio/ksuid"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
 	"github.com/zicops/zicops-notification-server/jwt"
@@ -35,15 +36,15 @@ type skeleton struct {
 }
 
 type results struct {
-	MessageId string `json:"message_ids"`
+	MessageId string `json:"message_id"`
 }
 
 type respBody struct {
-	Multicast_id  int `json:"multicast_id"`
-	Success       int `json:"success"`
-	Failure       int `json:"failure"`
-	Canonical_ids int `json:"canonical_id"`
-	Results       []results
+	Multicast_id  int       `json:"multicast_id"`
+	Success       int       `json:"success"`
+	Failure       int       `json:"failure"`
+	Canonical_ids int       `json:"canonical_id"`
+	Results       []results `json:"results"`
 }
 
 var cache *bigcache.BigCache
@@ -68,8 +69,10 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 		Body:  notification.Body,
 	}
 
+	l := len(notification.UserID)
+	var flag []int = make([]int, l)
 	//now we need to get fcm-token for given email, i.e., from email we need userID and using that we will get fcm-token
-	for _, userId := range notification.UserID {
+	for k, userId := range notification.UserID {
 		//userId := base64.StdEncoding.EncodeToString([]byte(*email))
 
 		var resp []map[string]interface{}
@@ -103,16 +106,45 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 			ch <- dataJson
 			go sendToCache(ch, &mut)
 
-			time.Sleep(1 * time.Second)
+			time.Sleep(2 * time.Second)
 			data, _ := cache.Get(string(dataJson))
+			code := string(data)
 			res = append(res, &model.Notification{
-				Statuscode: string(data),
+				Statuscode: code,
 			})
+			if code == "1" {
+				if flag[k] == 0 {
+					//means value has not been added yet, add the value
+					sendingToFirestore(dataJson, *userId)
+					flag[k] = 1
+				}
+			}
 		}
 
 	}
 	return res, nil
 
+}
+
+func sendingToFirestore(dataJson []byte, userId string) {
+	var msg message
+	err := json.Unmarshal(dataJson, &msg)
+	if err != nil {
+		log.Println(err)
+	}
+
+	msgId := ksuid.New()
+	_, err = global.Client.Collection("notification").Doc(msgId.String()).Set(global.Ct, model.FirestoreData{
+		Title:     msg.Notification.Title,
+		Body:      msg.Notification.Body,
+		CreatedAt: int(time.Now().Unix()),
+		MessageID: msgId.String(),
+		UserID:    userId,
+		IsRead:    false,
+	})
+	if err != nil {
+		log.Fatalf("Failed adding value to cloud firestore: %v", err)
+	}
 }
 
 func sendToCache(ch chan []byte, mut *sync.Mutex) {
