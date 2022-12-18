@@ -18,7 +18,7 @@ func GetFCMToken(ctx context.Context) (string, error) {
 	for {
 		_, err := iter.Next()
 		if err == iterator.Done {
-			//log.Println("We have reached inside our so callled main function")
+			//log.Println("We have reached inside our so called main function")
 			claims, _ := GetClaimsFromContext(global.Ct)
 			email_creator := claims["email"].(string)
 			userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
