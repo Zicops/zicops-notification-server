@@ -64,6 +64,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AddToFirestore   func(childComplexity int, message []*model.FirestoreDataInput) int
+		AuthTokens       func(childComplexity int) int
 		GetFCMToken      func(childComplexity int) int
 		SendEmail        func(childComplexity int, to []*string, senderName string, userName []*string, body string, templateID string) int
 		SendNotification func(childComplexity int, notification model.NotificationInput) int
@@ -88,6 +89,7 @@ type MutationResolver interface {
 	AddToFirestore(ctx context.Context, message []*model.FirestoreDataInput) (string, error)
 	SendEmail(ctx context.Context, to []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
 	GetFCMToken(ctx context.Context) (string, error)
+	AuthTokens(ctx context.Context) (string, error)
 }
 type QueryResolver interface {
 	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error)
@@ -203,6 +205,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AddToFirestore(childComplexity, args["message"].([]*model.FirestoreDataInput)), true
+
+	case "Mutation.Auth_tokens":
+		if e.complexity.Mutation.AuthTokens == nil {
+			break
+		}
+
+		return e.complexity.Mutation.AuthTokens(childComplexity), true
 
 	case "Mutation.getFCMToken":
 		if e.complexity.Mutation.GetFCMToken == nil {
@@ -383,6 +392,7 @@ type Mutation {
   addToFirestore(message: [FirestoreDataInput]!):String!
   sendEmail(to_: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   getFCMToken: String!
+  Auth_tokens: String!
 }
 
 type Query {
@@ -1279,6 +1289,50 @@ func (ec *executionContext) _Mutation_getFCMToken(ctx context.Context, field gra
 }
 
 func (ec *executionContext) fieldContext_Mutation_getFCMToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_Auth_tokens(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_Auth_tokens(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AuthTokens(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_Auth_tokens(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -3674,6 +3728,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_getFCMToken(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Auth_tokens":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_Auth_tokens(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {

@@ -53,6 +53,16 @@ func (r *mutationResolver) GetFCMToken(ctx context.Context) (string, error) {
 	return resp, nil
 }
 
+// AuthTokens is the resolver for the Auth_tokens field.
+func (r *mutationResolver) AuthTokens(ctx context.Context) (string, error) {
+	resp, err := handlers.Auth_tokens(ctx)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	return resp, nil
+}
+
 // GetAll is the resolver for the getAll field.
 func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error) {
 	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize)

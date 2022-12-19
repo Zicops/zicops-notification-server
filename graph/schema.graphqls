@@ -43,6 +43,7 @@ type Mutation {
   addToFirestore(message: [FirestoreDataInput]!):String!
   sendEmail(to_: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   getFCMToken: String!
+  Auth_tokens: String!
 }
 
 type Query {
