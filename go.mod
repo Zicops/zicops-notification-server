@@ -16,6 +16,11 @@ require (
 )
 
 require (
+	github.com/go-co-op/gocron v1.3.1
+	github.com/robfig/cron/v3 v3.0.0 // indirect
+)
+
+require (
 	cloud.google.com/go v0.105.0 // indirect
 	cloud.google.com/go/compute v1.12.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.1 // indirect
