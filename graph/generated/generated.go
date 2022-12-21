@@ -397,6 +397,7 @@ type Mutation {
 
 type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!): PaginatedNotifications!
+  
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
