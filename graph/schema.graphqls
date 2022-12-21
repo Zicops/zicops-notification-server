@@ -1,6 +1,7 @@
 input NotificationInput {
   title: String!
   body: String!
+  link: String!
   user_id: [String]!
 }
 

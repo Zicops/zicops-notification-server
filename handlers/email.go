@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"os"
@@ -92,11 +93,20 @@ func SendEmail(ctx context.Context, to []*string, sender_name string, user_name 
 
 func SendEmailToUserIds(ctx context.Context, to []*string, sender_name string, user_name []*string, body string, template_id string) ([]string, error) {
 
+	var emails []string
+	for _, v := range to {
+		tmp, err := base64.URLEncoding.DecodeString(*v)
+		if err != nil {
+			log.Println(err)
+		}
+		emails = append(emails, string(tmp))
+	}
+
 	var result []string
 	fromMail := mail.NewEmail(sender_name, "no_reply@zicops.com")
-	for k, mails := range to {
+	for k, mails := range emails {
 		//here we need to decrypt the userID to find email
-		toMail := mail.NewEmail("", *mails)
+		toMail := mail.NewEmail("", mails)
 		mailSetup := mail.NewV3Mail()
 		mailSetup.SetFrom(fromMail)
 		mailSetup.SetTemplateID(template_id)

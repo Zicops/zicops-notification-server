@@ -364,6 +364,7 @@ var sources = []*ast.Source{
 	{Name: "../schema.graphqls", Input: `input NotificationInput {
   title: String!
   body: String!
+  link: String!
   user_id: [String]!
 }
 
@@ -3637,7 +3638,7 @@ func (ec *executionContext) unmarshalInputNotificationInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "body", "user_id"}
+	fieldsInOrder := [...]string{"title", "body", "link", "user_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3657,6 +3658,14 @@ func (ec *executionContext) unmarshalInputNotificationInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
 			it.Body, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "link":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("link"))
+			it.Link, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
