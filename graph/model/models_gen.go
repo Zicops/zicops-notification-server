@@ -34,6 +34,7 @@ type Notification struct {
 type NotificationInput struct {
 	Title  string    `json:"title"`
 	Body   string    `json:"body"`
+	Link   string    `json:"link"`
 	UserID []*string `json:"user_id"`
 }
 
