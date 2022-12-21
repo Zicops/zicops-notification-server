@@ -75,7 +75,7 @@ func AddToDatastoreFCMToken(ctx context.Context, m TokenSave) (string, error) {
 	return "Values added successfully", nil
 }
 
-func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error) {
+func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
 
 	var firestoreResp []*model.FirestoreMessage
 	claims, _ := GetClaimsFromContext(ctx)
@@ -83,12 +83,22 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
 	startAfter := prevPageSnapShot
 	var iter *firestore.DocumentIterator
-	if startAfter == "" {
-		iter = global.Client.Collection("notification").Where("UserID", "==", userId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
+	if isRead != nil {
+		if startAfter == "" {
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
 
+		} else {
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).OrderBy("CreatedAt", firestore.Desc).StartAfter(startAfter).Limit(pageSize).Documents(ctx)
+		}
 	} else {
-		iter = global.Client.Collection("notification").Where("UserID", "==", userId).OrderBy("CreatedAt", firestore.Desc).StartAfter(startAfter).Limit(pageSize).Documents(ctx)
+		if startAfter == "" {
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
+
+		} else {
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).OrderBy("CreatedAt", firestore.Desc).StartAfter(startAfter).Limit(pageSize).Documents(ctx)
+		}
 	}
+
 	var resp []map[string]interface{}
 	var lastDoc *firestore.DocumentSnapshot
 	for {

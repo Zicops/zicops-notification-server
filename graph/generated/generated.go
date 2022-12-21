@@ -67,6 +67,7 @@ type ComplexityRoot struct {
 		AuthTokens       func(childComplexity int) int
 		GetFCMToken      func(childComplexity int) int
 		SendEmail        func(childComplexity int, to []*string, senderName string, userName []*string, body string, templateID string) int
+		SendEmailUserID  func(childComplexity int, userID []*string, senderName string, userName []*string, body string, templateID string) int
 		SendNotification func(childComplexity int, notification model.NotificationInput) int
 	}
 
@@ -80,7 +81,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetAll func(childComplexity int, prevPageSnapShot string, pageSize int) int
+		GetAll func(childComplexity int, prevPageSnapShot string, pageSize int, isRead *bool) int
 	}
 }
 
@@ -90,9 +91,10 @@ type MutationResolver interface {
 	SendEmail(ctx context.Context, to []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
 	GetFCMToken(ctx context.Context) (string, error)
 	AuthTokens(ctx context.Context) (string, error)
+	SendEmailUserID(ctx context.Context, userID []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
 }
 type QueryResolver interface {
-	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error)
+	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
 }
 
 type executableSchema struct {
@@ -232,6 +234,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SendEmail(childComplexity, args["to_"].([]*string), args["sender_name"].(string), args["user_name"].([]*string), args["body"].(string), args["template_id"].(string)), true
 
+	case "Mutation.sendEmail_UserId":
+		if e.complexity.Mutation.SendEmailUserID == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sendEmail_UserId_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SendEmailUserID(childComplexity, args["user_id"].([]*string), args["sender_name"].(string), args["user_name"].([]*string), args["body"].(string), args["template_id"].(string)), true
+
 	case "Mutation.sendNotification":
 		if e.complexity.Mutation.SendNotification == nil {
 			break
@@ -275,7 +289,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAll(childComplexity, args["prevPageSnapShot"].(string), args["pageSize"].(int)), true
+		return e.complexity.Query.GetAll(childComplexity, args["prevPageSnapShot"].(string), args["pageSize"].(int), args["is_read"].(*bool)), true
 
 	}
 	return 0, false
@@ -393,11 +407,11 @@ type Mutation {
   sendEmail(to_: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   getFCMToken: String!
   Auth_tokens: String!
+  sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
 }
 
 type Query {
-  getAll(prevPageSnapShot: String!, pageSize: Int!): PaginatedNotifications!
-  
+  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -418,6 +432,57 @@ func (ec *executionContext) field_Mutation_addToFirestore_args(ctx context.Conte
 		}
 	}
 	args["message"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_sendEmail_UserId_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*string
+	if tmp, ok := rawArgs["user_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+		arg0, err = ec.unmarshalNString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user_id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["sender_name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sender_name"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["sender_name"] = arg1
+	var arg2 []*string
+	if tmp, ok := rawArgs["user_name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_name"))
+		arg2, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user_name"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["body"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["body"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["template_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("template_id"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["template_id"] = arg4
 	return args, nil
 }
 
@@ -523,6 +588,15 @@ func (ec *executionContext) field_Query_getAll_args(ctx context.Context, rawArgs
 		}
 	}
 	args["pageSize"] = arg1
+	var arg2 *bool
+	if tmp, ok := rawArgs["is_read"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_read"))
+		arg2, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["is_read"] = arg2
 	return args, nil
 }
 
@@ -1346,6 +1420,58 @@ func (ec *executionContext) fieldContext_Mutation_Auth_tokens(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_sendEmail_UserId(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_sendEmail_UserId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SendEmailUserID(rctx, fc.Args["user_id"].([]*string), fc.Args["sender_name"].(string), fc.Args["user_name"].([]*string), fc.Args["body"].(string), fc.Args["template_id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_sendEmail_UserId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_sendEmail_UserId_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Notification_statuscode(ctx context.Context, field graphql.CollectedField, obj *model.Notification) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Notification_statuscode(ctx, field)
 	if err != nil {
@@ -1503,7 +1629,7 @@ func (ec *executionContext) _Query_getAll(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAll(rctx, fc.Args["prevPageSnapShot"].(string), fc.Args["pageSize"].(int))
+		return ec.resolvers.Query().GetAll(rctx, fc.Args["prevPageSnapShot"].(string), fc.Args["pageSize"].(int), fc.Args["is_read"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3743,6 +3869,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "sendEmail_UserId":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sendEmail_UserId(ctx, field)
+			})
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
