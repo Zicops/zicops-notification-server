@@ -63,9 +63,20 @@ func (r *mutationResolver) AuthTokens(ctx context.Context) (string, error) {
 	return resp, nil
 }
 
+// SendEmailUserID is the resolver for the sendEmail_UserId field.
+func (r *mutationResolver) SendEmailUserID(ctx context.Context, userID []*string, senderName string, userName []*string, body string, templateID string) ([]string, error) {
+	resp, err := handlers.SendEmailToUserIds(ctx, userID, senderName, userName, body, templateID)
+	if err != nil {
+		log.Println(err)
+		var temp string
+		return []string{temp}, nil
+	}
+	return resp, nil
+}
+
 // GetAll is the resolver for the getAll field.
-func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int) (*model.PaginatedNotifications, error) {
-	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize)
+func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
+	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize, isRead)
 	if err != nil {
 		log.Println("Error receiving notification list")
 		return nil, err

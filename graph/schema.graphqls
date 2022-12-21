@@ -44,8 +44,9 @@ type Mutation {
   sendEmail(to_: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   getFCMToken: String!
   Auth_tokens: String!
+  sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
 }
 
 type Query {
-  getAll(prevPageSnapShot: String!, pageSize: Int!): PaginatedNotifications!
+  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications!
 }
