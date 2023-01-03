@@ -236,7 +236,7 @@ func sendingToFirestore(dataJson []byte, userId string) {
 	}
 
 	msgId := ksuid.New()
-	tmp := msg.Notification.Click_Action
+	tmp := msg.Data.OpenUrl
 	_, err = global.Client.Collection("notification").Doc(msgId.String()).Set(global.Ct, model.FirestoreData{
 		Title:     msg.Notification.Title,
 		Body:      msg.Notification.Body,
