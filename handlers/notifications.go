@@ -188,6 +188,7 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 				Data:         tmp,
 			}
 			//log.Println("FCM-token for given userID ", v["FCM-token"].(string))
+
 			dataJson, err := json.Marshal(m)
 
 			if err != nil {
@@ -202,10 +203,21 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 			res = append(res, &model.Notification{
 				Statuscode: code,
 			})
+
+			templink := dat{
+				OpenUrl: link,
+			}
+			temp := message{
+				Notification: s,
+				To:           v["FCM-token"].(string),
+				CreatedAt:    time.Now().Unix(),
+				Data:         templink,
+			}
+			tempJson, _ := json.Marshal(temp)
 			if code == "1" {
 				if flag[k] == 0 {
 					//means value has not been added yet, add the value
-					sendingToFirestore(dataJson, *userId)
+					sendingToFirestore(tempJson, *userId)
 					flag[k] = 1
 				}
 			}

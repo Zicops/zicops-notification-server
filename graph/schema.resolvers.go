@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/zicops/zicops-notification-server/graph/generated"
@@ -23,9 +22,14 @@ func (r *mutationResolver) SendNotificationWithLink(ctx context.Context, notific
 	return resp, err
 }
 
-// SendNotificationWith is the resolver for the sendNotificationWith field.
-func (r *mutationResolver) SendNotificationWith(ctx context.Context, notification model.NotificationInput, link string) ([]*model.Notification, error) {
-	panic(fmt.Errorf("not implemented: SendNotificationWith - sendNotificationWith"))
+// SendNotification is the resolver for the sendNotification field.
+func (r *mutationResolver) SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error) {
+	resp, err := handlers.SendNotification(ctx, notification)
+	if err != nil {
+		log.Printf("Error sending notification %v", err)
+		return nil, err
+	}
+	return resp, err
 }
 
 // AddToFirestore is the resolver for the addToFirestore field.
@@ -98,13 +102,3 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *mutationResolver) SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error) {
-	return nil, nil
-}
