@@ -123,6 +123,7 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 			UserID:    v["UserID"].(string),
 			MessageID: v["MessageID"].(string),
 			IsRead:    v["IsRead"].(bool),
+			Link:      v["Link"].(string),
 		}
 		//log.Println(tmp.Body, "      ", tmp.Title)
 		firestoreResp = append(firestoreResp, tmp)
