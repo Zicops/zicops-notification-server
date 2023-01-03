@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/zicops/zicops-notification-server/graph/generated"
@@ -20,6 +21,11 @@ func (r *mutationResolver) SendNotificationWithLink(ctx context.Context, notific
 		return nil, err
 	}
 	return resp, err
+}
+
+// SendNotificationWith is the resolver for the sendNotificationWith field.
+func (r *mutationResolver) SendNotificationWith(ctx context.Context, notification model.NotificationInput, link string) ([]*model.Notification, error) {
+	panic(fmt.Errorf("not implemented: SendNotificationWith - sendNotificationWith"))
 }
 
 // AddToFirestore is the resolver for the addToFirestore field.
