@@ -103,19 +103,27 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 	var lastDoc *firestore.DocumentSnapshot
 	for {
 		doc, err := iter.Next()
-		//log.Print(err.Error())
-		if err.Error() == "no more items in iterator" {
-			return nil, nil
-		}
+		//see if iterator is done
 		if err == iterator.Done {
 			break
 		}
+
+		//see if the error is no more items in iterator
+		if err != nil && err.Error() == "no more items in iterator" {
+			break
+			//return nil, nil
+		}
+
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
 			return nil, err
 		}
 		lastDoc = doc
 		resp = append(resp, doc.Data())
+
+	}
+	if resp == nil {
+		return nil, nil
 	}
 	prevSeenData := lastDoc.Ref.ID
 	for _, v := range resp {
