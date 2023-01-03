@@ -55,7 +55,6 @@ type respBody struct {
 
 var cache *bigcache.BigCache
 
-/*
 // send notification without link
 func SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error) {
 	global.Ct = ctx
@@ -133,7 +132,6 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	return res, nil
 
 }
-*/
 
 // send notification with link
 func SendNotificationWithLink(ctx context.Context, notification model.NotificationInput, link string) ([]*model.Notification, error) {

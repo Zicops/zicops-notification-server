@@ -103,6 +103,10 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 	var lastDoc *firestore.DocumentSnapshot
 	for {
 		doc, err := iter.Next()
+		//log.Print(err.Error())
+		if err.Error() == "no more items in iterator" {
+			return nil, nil
+		}
 		if err == iterator.Done {
 			break
 		}
