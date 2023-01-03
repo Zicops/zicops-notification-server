@@ -15,6 +15,7 @@ type FirestoreMessage {
   user_id: String!
   message_id: String!
   is_read: Boolean!
+  link: String!
 }
 
 type FirestoreData {
@@ -24,6 +25,7 @@ type FirestoreData {
   user_id: String!
   is_read: Boolean!
   message_id: String!
+  link: String
 }
 
 input FirestoreDataInput {
@@ -39,7 +41,7 @@ type PaginatedNotifications {
 }
 
 type Mutation {
-  sendNotification(notification: NotificationInput!): [Notification]!
+  sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
   sendEmail(to_: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   getFCMToken: String!

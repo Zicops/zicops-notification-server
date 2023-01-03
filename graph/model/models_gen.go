@@ -3,12 +3,13 @@
 package model
 
 type FirestoreData struct {
-	Title     string `json:"title"`
-	Body      string `json:"body"`
-	CreatedAt int    `json:"created_at"`
-	UserID    string `json:"user_id"`
-	IsRead    bool   `json:"is_read"`
-	MessageID string `json:"message_id"`
+	Title     string  `json:"title"`
+	Body      string  `json:"body"`
+	CreatedAt int     `json:"created_at"`
+	UserID    string  `json:"user_id"`
+	IsRead    bool    `json:"is_read"`
+	MessageID string  `json:"message_id"`
+	Link      *string `json:"link"`
 }
 
 type FirestoreDataInput struct {
@@ -25,6 +26,7 @@ type FirestoreMessage struct {
 	UserID    string `json:"user_id"`
 	MessageID string `json:"message_id"`
 	IsRead    bool   `json:"is_read"`
+	Link      string `json:"link"`
 }
 
 type Notification struct {
@@ -34,7 +36,6 @@ type Notification struct {
 type NotificationInput struct {
 	Title  string    `json:"title"`
 	Body   string    `json:"body"`
-	Link   string    `json:"link"`
 	UserID []*string `json:"user_id"`
 }
 

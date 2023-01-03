@@ -28,11 +28,17 @@ type message struct {
 	Notification skeleton `json:"notification"`
 	To           string   `json:"to"`
 	CreatedAt    int64    `json:"created_at"`
+	Data         dat      `json:"data"`
+}
+
+type dat struct {
+	OpenUrl string `json:"openURL"`
 }
 
 type skeleton struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title        string `json:"title"`
+	Body         string `json:"body"`
+	Click_Action string `json:"click_action"`
 }
 
 type results struct {
@@ -49,6 +55,8 @@ type respBody struct {
 
 var cache *bigcache.BigCache
 
+/*
+// send notification without link
 func SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error) {
 	global.Ct = ctx
 	var res []*model.Notification
@@ -125,6 +133,90 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	return res, nil
 
 }
+*/
+
+// send notification with link
+func SendNotificationWithLink(ctx context.Context, notification model.NotificationInput, link string) ([]*model.Notification, error) {
+	global.Ct = ctx
+	var res []*model.Notification
+
+	//channel for sending data to cache function
+	ch := make(chan []byte, 100)
+	var mut sync.Mutex
+
+	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
+	if err != nil {
+		log.Printf("Unable to create cache %v", err)
+	}
+	cache = cacheVar
+
+	tmp := dat{
+		OpenUrl: link,
+	}
+	//s := notificationz.Skeleton and so on
+	s := skeleton{
+		Title:        notification.Title,
+		Body:         notification.Body,
+		Click_Action: "action.open.zicops.with.url",
+	}
+
+	l := len(notification.UserID)
+	var flag []int = make([]int, l)
+	//now we need to get fcm-token for given email, i.e., from email we need userID and using that we will get fcm-token
+	for k, userId := range notification.UserID {
+		//userId := base64.StdEncoding.EncodeToString([]byte(*email))
+
+		var resp []map[string]interface{}
+		//using this user id we will get fcm tokens
+		iter := global.Client.Collection("tokens").Where("UserID", "==", userId).Documents(ctx)
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Failed to iterate: %v", err)
+				return nil, err
+			}
+
+			resp = append(resp, doc.Data())
+		}
+		//now we have all the instances where userID is of person in the mail, and their fcm token/tokens alongside
+		for _, v := range resp {
+			m := message{
+				Notification: s,
+				To:           v["FCM-token"].(string),
+				CreatedAt:    time.Now().Unix(),
+				Data:         tmp,
+			}
+			//log.Println("FCM-token for given userID ", v["FCM-token"].(string))
+			dataJson, err := json.Marshal(m)
+
+			if err != nil {
+				log.Printf("Unable to convert to JSON: %v", err)
+			}
+			ch <- dataJson
+			go sendToCache(ch, &mut)
+
+			time.Sleep(2 * time.Second)
+			data, _ := cache.Get(string(dataJson))
+			code := string(data)
+			res = append(res, &model.Notification{
+				Statuscode: code,
+			})
+			if code == "1" {
+				if flag[k] == 0 {
+					//means value has not been added yet, add the value
+					sendingToFirestore(dataJson, *userId)
+					flag[k] = 1
+				}
+			}
+		}
+
+	}
+	return res, nil
+
+}
 
 func sendingToFirestore(dataJson []byte, userId string) {
 	var msg message
@@ -134,6 +226,7 @@ func sendingToFirestore(dataJson []byte, userId string) {
 	}
 
 	msgId := ksuid.New()
+	tmp := msg.Notification.Click_Action
 	_, err = global.Client.Collection("notification").Doc(msgId.String()).Set(global.Ct, model.FirestoreData{
 		Title:     msg.Notification.Title,
 		Body:      msg.Notification.Body,
@@ -141,7 +234,9 @@ func sendingToFirestore(dataJson []byte, userId string) {
 		MessageID: msgId.String(),
 		UserID:    userId,
 		IsRead:    false,
+		Link:      &tmp,
 	})
+
 	if err != nil {
 		log.Fatalf("Failed adding value to cloud firestore: %v", err)
 	}
