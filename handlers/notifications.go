@@ -31,6 +31,11 @@ type message struct {
 	Data         dat      `json:"data"`
 }
 
+type firebaseData struct {
+	M     message
+	LspID string
+}
+
 type dat struct {
 	OpenUrl string `json:"openURL"`
 }
@@ -104,7 +109,7 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 				To:           v["FCM-token"].(string),
 				CreatedAt:    time.Now().Unix(),
 			}
-			//log.Println("FCM-token for given userID ", v["FCM-token"].(string))
+
 			dataJson, err := json.Marshal(m)
 
 			if err != nil {
@@ -136,6 +141,14 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 // send notification with link
 func SendNotificationWithLink(ctx context.Context, notification model.NotificationInput, link string) ([]*model.Notification, error) {
 	global.Ct = ctx
+
+	//get claims from context
+	claims, err := GetClaimsFromContext(ctx)
+	if err != nil {
+		log.Println("Got error while getting claims from context  ", err)
+	}
+	lsp := claims["lsp_id"].(string)
+
 	var res []*model.Notification
 
 	//channel for sending data to cache function
@@ -166,7 +179,7 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 
 		var resp []map[string]interface{}
 		//using this user id we will get fcm tokens
-		iter := global.Client.Collection("tokens").Where("UserID", "==", userId).Documents(ctx)
+		iter := global.Client.Collection("tokens").Where("UserID", "==", *userId).Where("LspID", "==", lsp).Documents(ctx)
 		for {
 			doc, err := iter.Next()
 			if err == iterator.Done {
@@ -213,7 +226,11 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 				CreatedAt:    time.Now().Unix(),
 				Data:         templink,
 			}
-			tempJson, _ := json.Marshal(temp)
+			fbd := firebaseData{
+				M:     temp,
+				LspID: lsp,
+			}
+			tempJson, _ := json.Marshal(fbd)
 			if code == "1" {
 				if flag[k] == 0 {
 					//means value has not been added yet, add the value
@@ -229,22 +246,24 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 }
 
 func sendingToFirestore(dataJson []byte, userId string) {
-	var msg message
+	var msg firebaseData
 	err := json.Unmarshal(dataJson, &msg)
+
 	if err != nil {
 		log.Println(err)
 	}
 
 	msgId := ksuid.New()
-	tmp := msg.Data.OpenUrl
+	tmp := msg.M.Data.OpenUrl
 	_, err = global.Client.Collection("notification").Doc(msgId.String()).Set(global.Ct, model.FirestoreData{
-		Title:     msg.Notification.Title,
-		Body:      msg.Notification.Body,
+		Title:     msg.M.Notification.Title,
+		Body:      msg.M.Notification.Body,
 		CreatedAt: int(time.Now().Unix()),
 		MessageID: msgId.String(),
 		UserID:    userId,
 		IsRead:    false,
 		Link:      &tmp,
+		LspID:     msg.LspID,
 	})
 
 	if err != nil {
@@ -262,6 +281,7 @@ func sendToCache(ch chan []byte, mut *sync.Mutex) {
 
 	statusCode := ""
 	_ = json.Unmarshal(data, &statusCode)
+	//log.Println(string(dataJson))
 
 	var m sync.Mutex
 
@@ -323,5 +343,12 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 func GetClaimsFromContext(ctx context.Context) (map[string]interface{}, error) {
 	token := ctx.Value("token").(string)
 	claims, err := jwt.GetClaims(token)
+	//get lsp-id from context, if already there then okay otherwise put zicops lsp-id
+	lspID := "d8685567-cdae-4ee0-a80e-c187848a760e"
+	lsp := ctx.Value("tenant").(string)
+	if lsp == "" {
+		lsp = lspID
+	}
+	claims["lsp_id"] = lsp
 	return claims, err
 }

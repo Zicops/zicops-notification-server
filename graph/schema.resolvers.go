@@ -85,8 +85,8 @@ func (r *mutationResolver) SendEmailUserID(ctx context.Context, userID []*string
 }
 
 // GetAll is the resolver for the getAll field.
-func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
-	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize, isRead)
+func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool, lspID string) (*model.PaginatedNotifications, error) {
+	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize, isRead, lspID)
 	if err != nil {
 		log.Println("Error receiving notification list")
 		return nil, err
