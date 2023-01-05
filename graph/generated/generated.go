@@ -48,6 +48,7 @@ type ComplexityRoot struct {
 		CreatedAt func(childComplexity int) int
 		IsRead    func(childComplexity int) int
 		Link      func(childComplexity int) int
+		LspID     func(childComplexity int) int
 		MessageID func(childComplexity int) int
 		Title     func(childComplexity int) int
 		UserID    func(childComplexity int) int
@@ -58,6 +59,7 @@ type ComplexityRoot struct {
 		CreatedAt func(childComplexity int) int
 		IsRead    func(childComplexity int) int
 		Link      func(childComplexity int) int
+		LspID     func(childComplexity int) int
 		MessageID func(childComplexity int) int
 		Title     func(childComplexity int) int
 		UserID    func(childComplexity int) int
@@ -83,7 +85,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetAll func(childComplexity int, prevPageSnapShot string, pageSize int, isRead *bool) int
+		GetAll func(childComplexity int, prevPageSnapShot string, pageSize int, isRead *bool, lspID string) int
 	}
 }
 
@@ -97,7 +99,7 @@ type MutationResolver interface {
 	SendEmailUserID(ctx context.Context, userID []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
 }
 type QueryResolver interface {
-	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
+	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool, lspID string) (*model.PaginatedNotifications, error)
 }
 
 type executableSchema struct {
@@ -142,6 +144,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FirestoreData.Link(childComplexity), true
+
+	case "FirestoreData.lsp_id":
+		if e.complexity.FirestoreData.LspID == nil {
+			break
+		}
+
+		return e.complexity.FirestoreData.LspID(childComplexity), true
 
 	case "FirestoreData.message_id":
 		if e.complexity.FirestoreData.MessageID == nil {
@@ -191,6 +200,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FirestoreMessage.Link(childComplexity), true
+
+	case "FirestoreMessage.lsp_id":
+		if e.complexity.FirestoreMessage.LspID == nil {
+			break
+		}
+
+		return e.complexity.FirestoreMessage.LspID(childComplexity), true
 
 	case "FirestoreMessage.message_id":
 		if e.complexity.FirestoreMessage.MessageID == nil {
@@ -318,7 +334,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAll(childComplexity, args["prevPageSnapShot"].(string), args["pageSize"].(int), args["is_read"].(*bool)), true
+		return e.complexity.Query.GetAll(childComplexity, args["prevPageSnapShot"].(string), args["pageSize"].(int), args["is_read"].(*bool), args["lsp_id"].(string)), true
 
 	}
 	return 0, false
@@ -408,6 +424,7 @@ type FirestoreMessage {
   message_id: String!
   is_read: Boolean!
   link: String!
+  lsp_id: String!
 }
 
 type FirestoreData {
@@ -418,6 +435,7 @@ type FirestoreData {
   is_read: Boolean!
   message_id: String!
   link: String
+  lsp_id: String!
 }
 
 input FirestoreDataInput {
@@ -443,7 +461,7 @@ type Mutation {
 }
 
 type Query {
-  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
+  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean, lsp_id:String!): PaginatedNotifications
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -653,6 +671,15 @@ func (ec *executionContext) field_Query_getAll_args(ctx context.Context, rawArgs
 		}
 	}
 	args["is_read"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["lsp_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lsp_id"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["lsp_id"] = arg3
 	return args, nil
 }
 
@@ -999,6 +1026,50 @@ func (ec *executionContext) fieldContext_FirestoreData_link(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _FirestoreData_lsp_id(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FirestoreData_lsp_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LspID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FirestoreData_lsp_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FirestoreData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _FirestoreMessage_title(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_FirestoreMessage_title(ctx, field)
 	if err != nil {
@@ -1295,6 +1366,50 @@ func (ec *executionContext) _FirestoreMessage_link(ctx context.Context, field gr
 }
 
 func (ec *executionContext) fieldContext_FirestoreMessage_link(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FirestoreMessage",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FirestoreMessage_lsp_id(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreMessage) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FirestoreMessage_lsp_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LspID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FirestoreMessage_lsp_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "FirestoreMessage",
 		Field:      field,
@@ -1769,6 +1884,8 @@ func (ec *executionContext) fieldContext_PaginatedNotifications_messages(ctx con
 				return ec.fieldContext_FirestoreMessage_is_read(ctx, field)
 			case "link":
 				return ec.fieldContext_FirestoreMessage_link(ctx, field)
+			case "lsp_id":
+				return ec.fieldContext_FirestoreMessage_lsp_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type FirestoreMessage", field.Name)
 		},
@@ -1831,7 +1948,7 @@ func (ec *executionContext) _Query_getAll(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAll(rctx, fc.Args["prevPageSnapShot"].(string), fc.Args["pageSize"].(int), fc.Args["is_read"].(*bool))
+		return ec.resolvers.Query().GetAll(rctx, fc.Args["prevPageSnapShot"].(string), fc.Args["pageSize"].(int), fc.Args["is_read"].(*bool), fc.Args["lsp_id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3937,6 +4054,13 @@ func (ec *executionContext) _FirestoreData(ctx context.Context, sel ast.Selectio
 
 			out.Values[i] = ec._FirestoreData_link(ctx, field, obj)
 
+		case "lsp_id":
+
+			out.Values[i] = ec._FirestoreData_lsp_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4003,6 +4127,13 @@ func (ec *executionContext) _FirestoreMessage(ctx context.Context, sel ast.Selec
 		case "link":
 
 			out.Values[i] = ec._FirestoreMessage_link(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "lsp_id":
+
+			out.Values[i] = ec._FirestoreMessage_lsp_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

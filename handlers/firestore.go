@@ -75,7 +75,7 @@ func AddToDatastoreFCMToken(ctx context.Context, m TokenSave) (string, error) {
 	return "Values added successfully", nil
 }
 
-func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
+func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool, lspId string) (*model.PaginatedNotifications, error) {
 
 	var firestoreResp []*model.FirestoreMessage
 	claims, _ := GetClaimsFromContext(ctx)
@@ -85,17 +85,17 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 	var iter *firestore.DocumentIterator
 	if isRead != nil {
 		if startAfter == "" {
-			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
 
 		} else {
-			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).OrderBy("CreatedAt", firestore.Desc).StartAfter(startAfter).Limit(pageSize).Documents(ctx)
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).StartAfter(startAfter).Limit(pageSize).Documents(ctx)
 		}
 	} else {
 		if startAfter == "" {
-			iter = global.Client.Collection("notification").Where("UserID", "==", userId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
 
 		} else {
-			iter = global.Client.Collection("notification").Where("UserID", "==", userId).OrderBy("CreatedAt", firestore.Desc).StartAfter(startAfter).Limit(pageSize).Documents(ctx)
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).StartAfter(startAfter).Limit(pageSize).Documents(ctx)
 		}
 	}
 
@@ -136,6 +136,7 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 			MessageID: v["MessageID"].(string),
 			IsRead:    v["IsRead"].(bool),
 			Link:      v["Link"].(string),
+			LspID:     v["LspID"].(string),
 		}
 		//log.Println(tmp.Body, "      ", tmp.Title)
 		firestoreResp = append(firestoreResp, tmp)

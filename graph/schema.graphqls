@@ -16,6 +16,7 @@ type FirestoreMessage {
   message_id: String!
   is_read: Boolean!
   link: String!
+  lsp_id: String!
 }
 
 type FirestoreData {
@@ -26,6 +27,7 @@ type FirestoreData {
   is_read: Boolean!
   message_id: String!
   link: String
+  lsp_id: String!
 }
 
 input FirestoreDataInput {
@@ -51,5 +53,5 @@ type Mutation {
 }
 
 type Query {
-  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
+  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean, lsp_id:String!): PaginatedNotifications
 }

@@ -10,6 +10,7 @@ type FirestoreData struct {
 	IsRead    bool    `json:"is_read"`
 	MessageID string  `json:"message_id"`
 	Link      *string `json:"link"`
+	LspID     string  `json:"lsp_id"`
 }
 
 type FirestoreDataInput struct {
@@ -27,6 +28,7 @@ type FirestoreMessage struct {
 	MessageID string `json:"message_id"`
 	IsRead    bool   `json:"is_read"`
 	Link      string `json:"link"`
+	LspID     string `json:"lsp_id"`
 }
 
 type Notification struct {
