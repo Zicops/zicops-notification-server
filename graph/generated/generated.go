@@ -85,7 +85,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetAll func(childComplexity int, prevPageSnapShot string, pageSize int, isRead *bool, lspID string) int
+		GetAll func(childComplexity int, prevPageSnapShot string, pageSize int, isRead *bool) int
 	}
 }
 
@@ -99,7 +99,7 @@ type MutationResolver interface {
 	SendEmailUserID(ctx context.Context, userID []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
 }
 type QueryResolver interface {
-	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool, lspID string) (*model.PaginatedNotifications, error)
+	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
 }
 
 type executableSchema struct {
@@ -334,7 +334,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAll(childComplexity, args["prevPageSnapShot"].(string), args["pageSize"].(int), args["is_read"].(*bool), args["lsp_id"].(string)), true
+		return e.complexity.Query.GetAll(childComplexity, args["prevPageSnapShot"].(string), args["pageSize"].(int), args["is_read"].(*bool)), true
 
 	}
 	return 0, false
@@ -461,7 +461,7 @@ type Mutation {
 }
 
 type Query {
-  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean, lsp_id:String!): PaginatedNotifications
+  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -671,15 +671,6 @@ func (ec *executionContext) field_Query_getAll_args(ctx context.Context, rawArgs
 		}
 	}
 	args["is_read"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["lsp_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lsp_id"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["lsp_id"] = arg3
 	return args, nil
 }
 
@@ -1948,7 +1939,7 @@ func (ec *executionContext) _Query_getAll(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAll(rctx, fc.Args["prevPageSnapShot"].(string), fc.Args["pageSize"].(int), fc.Args["is_read"].(*bool), fc.Args["lsp_id"].(string))
+		return ec.resolvers.Query().GetAll(rctx, fc.Args["prevPageSnapShot"].(string), fc.Args["pageSize"].(int), fc.Args["is_read"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

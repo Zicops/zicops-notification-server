@@ -75,11 +75,12 @@ func AddToDatastoreFCMToken(ctx context.Context, m TokenSave) (string, error) {
 	return "Values added successfully", nil
 }
 
-func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool, lspId string) (*model.PaginatedNotifications, error) {
+func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
 
 	var firestoreResp []*model.FirestoreMessage
 	claims, _ := GetClaimsFromContext(ctx)
 	email_creator := claims["email"].(string)
+	lspId := claims["lsp_id"].(string)
 	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
 	startAfter := prevPageSnapShot
 	var iter *firestore.DocumentIterator
