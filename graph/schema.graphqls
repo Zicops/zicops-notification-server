@@ -53,5 +53,5 @@ type Mutation {
 }
 
 type Query {
-  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean, lsp_id:String!): PaginatedNotifications
+  getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
 }
