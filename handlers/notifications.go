@@ -84,8 +84,8 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 	l := len(notification.UserID)
 	var flag []int = make([]int, l)
 	//now we need to get fcm-token for given email, i.e., from email we need userID and using that we will get fcm-token
-	for k, userId := range notification.UserID {
-		//userId := base64.StdEncoding.EncodeToString([]byte(*email))
+	for k, ui := range notification.UserID {
+		userId := ui
 
 		var resp []map[string]interface{}
 		//using this user id we will get fcm tokens
@@ -173,6 +173,9 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 
 	l := len(notification.UserID)
 	var flag []int = make([]int, l)
+	for k := range flag {
+		flag[k] = 0
+	}
 	//now we need to get fcm-token for given email, i.e., from email we need userID and using that we will get fcm-token
 	for k, userId := range notification.UserID {
 		//userId := base64.StdEncoding.EncodeToString([]byte(*email))

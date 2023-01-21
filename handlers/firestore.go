@@ -15,7 +15,10 @@ import (
 )
 
 func AddToDatastore(ctx context.Context, m []*model.FirestoreDataInput) (string, error) {
-	claims, _ := GetClaimsFromContext(ctx)
+	claims, err := GetClaimsFromContext(ctx)
+	if err != nil {
+		log.Printf("Error getting claims from headers: %v", err)
+	}
 	email_creator := claims["email"].(string)
 	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
 
