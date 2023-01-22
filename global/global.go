@@ -56,8 +56,7 @@ func deleteNotifications() {
 
 	delay := time.Hour * 24 * 7
 	s := gocron.NewScheduler(time.Local)
-	s.Every(delay).Friday().At("02:00").Do(sch)
-
+	s.Friday().Every(delay).At("02:00").Do(sch)
 }
 
 func sch() {
