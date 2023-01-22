@@ -77,13 +77,13 @@ func sch() {
 		resp = append(resp, doc.Data())
 	}
 	//here we just need to delete older notifications
-	tendays := int64((time.Hour * 24 * 10).Seconds())
+	thirtydays := int64((time.Hour * 24 * 30).Seconds())
 	cur := int64(time.Now().Unix())
 	for k, v := range resp {
 		//log.Println("Reached here")
 		t := v["CreatedAt"].(int64)
 		dif := cur - t
-		if dif > tendays {
+		if dif > thirtydays {
 			_, err := Client.Collection("notification").Doc(ids[k]).Delete(Ct)
 			if err != nil {
 				log.Println("Got error while deleting the data ", err)
