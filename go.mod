@@ -15,10 +15,7 @@ require (
 	google.golang.org/grpc v1.50.1
 )
 
-require (
-	github.com/go-co-op/gocron v1.3.1
-	github.com/robfig/cron/v3 v3.0.0 // indirect
-)
+require github.com/robfig/cron/v3 v3.0.0
 
 require (
 	cloud.google.com/go v0.105.0 // indirect

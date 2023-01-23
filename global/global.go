@@ -9,7 +9,7 @@ import (
 	firestore "cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 
-	"github.com/go-co-op/gocron"
+	"github.com/robfig/cron/v3"
 	lib "github.com/zicops/zicops-notification-server/lib"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -54,9 +54,8 @@ func init() {
 
 func deleteNotifications() {
 
-	delay := time.Hour * 24 * 7
-	s := gocron.NewScheduler(time.Local)
-	s.Every(delay).Friday().At("02:00").Do(sch)
+	c := cron.New()
+	c.AddFunc("0 2 * * 5", sch)
 
 }
 
