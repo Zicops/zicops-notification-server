@@ -22,7 +22,7 @@ env:
   staging_approvers: ${{ vars.STAGING_APPROVERS }}
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
   GKE_ZONE: asia-south1-a
-  SERVICE_NAME: zicops-user-manager
+  SERVICE_NAME: zicops-notification-server
   
 
 # Deploy  jobs
