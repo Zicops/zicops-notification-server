@@ -9,12 +9,11 @@ import (
 	"strconv"
 
 	//"os"
-	"sync"
+
 	"time"
 
 	"encoding/json"
 
-	"github.com/allegro/bigcache/v3"
 	"google.golang.org/api/iterator"
 
 	//"github.com/zicops/contracts/notificationz"
@@ -58,22 +57,10 @@ type respBody struct {
 	Results       []results `json:"results"`
 }
 
-var cache *bigcache.BigCache
-
 // send notification without link
 func SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error) {
 	global.Ct = ctx
 	var res []*model.Notification
-
-	//channel for sending data to cache function
-	ch := make(chan []byte, 100)
-	var mut sync.Mutex
-
-	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
-	if err != nil {
-		log.Printf("Unable to create cache %v", err)
-	}
-	cache = cacheVar
 
 	//s := notificationz.Skeleton and so on
 	s := skeleton{
@@ -110,21 +97,14 @@ func SendNotification(ctx context.Context, notification model.NotificationInput)
 				CreatedAt:    time.Now().Unix(),
 			}
 
-			dataJson, err := json.Marshal(m)
+			dataJson, _ := json.Marshal(m)
 
-			if err != nil {
-				log.Printf("Unable to convert to JSON: %v", err)
-			}
-			ch <- dataJson
-			go sendToCache(ch, &mut)
+			code := sendToFirebase(dataJson)
 
-			time.Sleep(2 * time.Second)
-			data, _ := cache.Get(string(dataJson))
-			code := string(data)
 			res = append(res, &model.Notification{
-				Statuscode: code,
+				Statuscode: strconv.Itoa(code),
 			})
-			if code == "1" {
+			if code == 1 {
 				if flag[k] == 0 {
 					//means value has not been added yet, add the value
 					sendingToFirestore(dataJson, *userId)
@@ -150,16 +130,6 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 	lsp := claims["lsp_id"].(string)
 
 	var res []*model.Notification
-
-	//channel for sending data to cache function
-	ch := make(chan []byte, 100)
-	var mut sync.Mutex
-
-	cacheVar, err := bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
-	if err != nil {
-		log.Printf("Unable to create cache %v", err)
-	}
-	cache = cacheVar
 
 	tmp := dat{
 		OpenUrl: link,
@@ -203,23 +173,17 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 				CreatedAt:    time.Now().Unix(),
 				Data:         tmp,
 			}
-			//log.Println("FCM-token for given userID ", v["FCM-token"].(string))
 
 			dataJson, err := json.Marshal(m)
 
 			if err != nil {
 				log.Printf("Unable to convert to JSON: %v", err)
 			}
-			ch <- dataJson
-			go sendToCache(ch, &mut)
 
-			time.Sleep(2 * time.Second)
-			data, _ := cache.Get(string(dataJson))
-			code := string(data)
+			code := sendToFirebase(dataJson)
 			res = append(res, &model.Notification{
-				Statuscode: code,
+				Statuscode: strconv.Itoa(code),
 			})
-
 			templink := dat{
 				OpenUrl: link,
 			}
@@ -234,7 +198,7 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 				LspID: lsp,
 			}
 			tempJson, _ := json.Marshal(fbd)
-			if code == "1" {
+			if code == 1 {
 				if flag[k] == 0 {
 					//means value has not been added yet, add the value
 					sendingToFirestore(tempJson, *userId)
@@ -274,34 +238,9 @@ func sendingToFirestore(dataJson []byte, userId string) {
 	}
 }
 
-func sendToCache(ch chan []byte, mut *sync.Mutex) {
-	mut.Lock()
+func sendToFirebase(dataJson []byte) int {
 
-	firebaseCh := make(chan []byte, 100)
-
-	dataJson := <-ch
-	data, err := cache.Get(string(dataJson))
-
-	statusCode := ""
-	_ = json.Unmarshal(data, &statusCode)
-	//log.Println(string(dataJson))
-
-	var m sync.Mutex
-
-	//checking if value has not been seen before, then sending it to firebase
-	if err != nil || statusCode == "" {
-		firebaseCh <- dataJson
-		go sendToFirebase(firebaseCh, &m)
-	}
-	mut.Unlock()
-}
-
-func sendToFirebase(ch chan []byte, m *sync.Mutex) {
-	m.Lock()
-
-	dataJson := <-ch
 	body := bytes.NewReader(dataJson)
-
 	//sending request
 	req, err := http.NewRequest("POST", "https://fcm.googleapis.com/fcm/send", body)
 	if err != nil {
@@ -330,16 +269,7 @@ func sendToFirebase(ch chan []byte, m *sync.Mutex) {
 		//it means that we we don't have data according to respBody struct, i.e., instead of message_id, there are errors
 		log.Printf("Unable to send the notification %v", err)
 	}
-	//log.Println(successCode.Results[0].MessageId)
-	//log.Println("Key", string(dataJson))
-	err = cache.Set(string(dataJson), []byte(strconv.Itoa(successCode.Success)))
-	if err != nil {
-		log.Printf(" Got error while setting the key %v", err)
-	}
-
-	//log.Println(successCode.Success)
-
-	m.Unlock()
+	return successCode.Success
 
 }
 
