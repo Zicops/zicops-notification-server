@@ -125,7 +125,8 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 	//get claims from context
 	claims, err := GetClaimsFromContext(ctx)
 	if err != nil {
-		log.Println("Got error while getting claims from context  ", err)
+		log.Printf("Unable to get claims from context: %v", err)
+		return nil, err
 	}
 	lsp := claims["lsp_id"].(string)
 
