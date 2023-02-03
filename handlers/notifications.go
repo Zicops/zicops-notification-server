@@ -277,6 +277,9 @@ func sendToFirebase(dataJson []byte) int {
 func GetClaimsFromContext(ctx context.Context) (map[string]interface{}, error) {
 	token := ctx.Value("token").(string)
 	claims, err := jwt.GetClaims(token)
+	if err != nil {
+		return nil, err
+	}
 	//get lsp-id from context, if already there then okay otherwise put zicops lsp-id
 	lspID := "d8685567-cdae-4ee0-a80e-c187848a760e"
 	lsp := ctx.Value("tenant").(string)
