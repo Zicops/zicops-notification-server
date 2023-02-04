@@ -56,7 +56,34 @@ func deleteNotifications() {
 
 	c := cron.New()
 	c.AddFunc("0 2 * * 5", sch)
+	c.AddFunc("15 0 * * *", deleteNullTokens)
 
+}
+
+func deleteNullTokens() {
+	var resp []map[string]interface{}
+	var ids []string
+	iter := Client.Collection("tokens").Documents(Ct)
+	for {
+
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Println(err)
+		}
+		ids = append(ids, doc.Ref.ID)
+		resp = append(resp, doc.Data())
+	}
+	for k, v := range resp {
+		if v["FCM-token"] == nil || v["LspID"] == nil {
+			_, err := Client.Collection("tokens").Doc(ids[k]).Delete(Ct)
+			if err != nil {
+				log.Println("Got error while deleting the data ", err)
+			}
+		}
+	}
 }
 
 func sch() {
