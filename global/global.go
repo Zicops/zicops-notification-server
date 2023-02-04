@@ -56,7 +56,7 @@ func deleteNotifications() {
 
 	c := cron.New()
 	c.AddFunc("0 2 * * 5", sch)
-	c.AddFunc("15 0 * * *", deleteNullTokens)
+	c.AddFunc("20 0 * * *", deleteNullTokens)
 
 }
 
@@ -77,7 +77,7 @@ func deleteNullTokens() {
 		resp = append(resp, doc.Data())
 	}
 	for k, v := range resp {
-		if v["FCM-token"] == nil || v["LspID"] == nil {
+		if v["FCM-token"].(string) == "null" || v["LspID"].(string) == "null" {
 			_, err := Client.Collection("tokens").Doc(ids[k]).Delete(Ct)
 			if err != nil {
 				log.Println("Got error while deleting the data ", err)
