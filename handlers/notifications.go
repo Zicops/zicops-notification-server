@@ -165,7 +165,7 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 			}
 			//check for null values
 			tmp := doc.Data()
-			if tmp["FCM-token"] == "null" || tmp["LspId"] == "null" {
+			if tmp["FCM-token"].(string) == "null" || tmp["LspId"].(string) == "null" {
 				continue
 			}
 
