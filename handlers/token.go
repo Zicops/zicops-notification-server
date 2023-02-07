@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"log"
 
@@ -14,8 +15,14 @@ func GetFCMToken(ctx context.Context) (string, error) {
 	global.Ct = ctx
 	claims, _ := GetClaimsFromContext(ctx)
 	lsp := claims["lsp_id"].(string)
+	email := claims["email"].(string)
+	userID := base64.URLEncoding.EncodeToString([]byte(email))
+	//check if FCM-token is null
+	if lsp == "" {
+		return "", errors.New("lsp is null")
+	}
 	fcm_token := fmt.Sprintf("%s", ctx.Value("fcm-token"))
-	iter := global.Client.Collection("tokens").Where("FCM-token", "==", fcm_token).Where("LspID", "==", lsp).Documents(global.Ct)
+	iter := global.Client.Collection("tokens").Where("FCM-token", "==", fcm_token).Where("LspID", "==", lsp).Where("UserID", "==", userID).Documents(global.Ct)
 	for {
 		_, err := iter.Next()
 

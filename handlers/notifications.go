@@ -163,6 +163,11 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 				log.Fatalf("Failed to iterate: %v", err)
 				return nil, err
 			}
+			//check for null values
+			tmp := doc.Data()
+			if tmp["FCM-token"] == "null" || tmp["LspId"] == "null" {
+				continue
+			}
 
 			resp = append(resp, doc.Data())
 		}
