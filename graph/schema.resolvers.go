@@ -94,6 +94,16 @@ func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pag
 	return resp, nil
 }
 
+// GetAllPaginatedNotifications is the resolver for the getAllPaginatedNotifications field.
+func (r *queryResolver) GetAllPaginatedNotifications(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
+	resp, err := handlers.GetAllPaginatedNotifications(ctx, prevPageSnapShot, pageSize, isRead)
+	if err != nil {
+		log.Println("Error receiving notification list")
+		return nil, err
+	}
+	return resp, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

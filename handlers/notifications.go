@@ -165,7 +165,7 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 			}
 			//check for null values
 			tmp := doc.Data()
-			if tmp["FCM-token"].(string) == "null" || tmp["LspId"].(string) == "null" {
+			if !checkNullValues(tmp) {
 				continue
 			}
 
@@ -293,4 +293,18 @@ func GetClaimsFromContext(ctx context.Context) (map[string]interface{}, error) {
 	}
 	claims["lsp_id"] = lsp
 	return claims, err
+}
+
+func checkNullValues(tmp map[string]interface{}) bool {
+	if tmp["FCM-token"] == nil || tmp["FCM-token"].(string) == "null" {
+		//log.Println("Reached here")
+		return false
+	}
+
+	if tmp["LspID"] == nil || tmp["LspID"].(string) == "null" {
+		//log.Println("Reacher here lsp")
+		return false
+	}
+
+	return true
 }

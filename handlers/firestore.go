@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"log"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -149,4 +150,72 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 		Messages:         firestoreResp,
 		NextPageSnapShot: &prevSeenData,
 	}, nil
+}
+
+func GetAllPaginatedNotifications(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
+
+	var firestoreResp []*model.FirestoreMessage
+	claims, _ := GetClaimsFromContext(ctx)
+	email_creator := claims["email"].(string)
+	lspId := claims["lsp_id"].(string)
+	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
+	startAfter := prevPageSnapShot
+	var iter *firestore.DocumentIterator
+	if isRead != nil {
+		if startAfter == "" {
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
+
+		} else {
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).StartAfter(startAfter).Documents(ctx)
+		}
+	} else {
+		if startAfter == "" {
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
+
+		} else {
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).StartAfter("1675529644").Documents(ctx)
+		}
+	}
+	tmp, err := iter.GetAll()
+	if err != nil {
+		log.Println(err)
+		return nil, nil
+	}
+	var resp []map[string]interface{}
+	lstDoc := tmp[len(tmp)-1]
+	for _, vv := range tmp {
+		v := vv
+		data := v.Data()
+		resp = append(resp, data)
+	}
+	rs, err := lstDoc.DataAt("CreatedAt")
+	if err != nil {
+		return nil, err
+	}
+	if resp == nil {
+		return nil, nil
+	}
+	for _, v := range resp {
+		createdAt, _ := v["CreatedAt"].(int64)
+		tmp := &model.FirestoreMessage{
+			Body:      v["Body"].(string),
+			Title:     v["Title"].(string),
+			CreatedAt: int(createdAt),
+			UserID:    v["UserID"].(string),
+			MessageID: v["MessageID"].(string),
+			IsRead:    v["IsRead"].(bool),
+			Link:      v["Link"].(string),
+			LspID:     v["LspID"].(string),
+		}
+		//log.Println(tmp.Body, "      ", tmp.Title)
+		firestoreResp = append(firestoreResp, tmp)
+	}
+	//r := lstDoc.Ref.ID
+	ca := rs.(int64)
+	res := strconv.Itoa(int(ca))
+	return &model.PaginatedNotifications{
+		Messages:         firestoreResp,
+		NextPageSnapShot: &res,
+	}, nil
+
 }
