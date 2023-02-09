@@ -173,7 +173,7 @@ func GetAllPaginatedNotifications(ctx context.Context, prevPageSnapShot string, 
 			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
 
 		} else {
-			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).StartAfter("1675529644").Documents(ctx)
+			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).StartAfter(startAfter).Documents(ctx)
 		}
 	}
 	tmp, err := iter.GetAll()
