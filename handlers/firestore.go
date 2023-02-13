@@ -182,9 +182,20 @@ func GetAllPaginatedNotifications(ctx context.Context, pageIndex int, pageSize i
 	if err != nil {
 		return nil, err
 	}
-	if resp == nil {
+
+	if len(resp) == 0 {
 		return nil, nil
 	}
+	start := (pageIndex - 1) * pageSize
+	var end int
+	if len(resp) < pageIndex*pageSize {
+		end = len(resp)
+	} else {
+		end = pageIndex * pageSize
+	}
+
+	resp = resp[start:end]
+
 	for _, v := range resp {
 		createdAt, _ := v["CreatedAt"].(int64)
 		tmp := &model.FirestoreMessage{
@@ -204,10 +215,7 @@ func GetAllPaginatedNotifications(ctx context.Context, pageIndex int, pageSize i
 	//pageIndex = 1, size = 10=> start from 0 to pagesize
 	//pageIndex = 2, size = 10 => start from 10 to pagesize
 	// (n-1)*pagesize  to  n*pagesize
-	start := (pageIndex - 1) * pageSize
-	end := pageIndex * pageSize
-	res := firestoreResp[start:end]
 
-	return res, nil
+	return firestoreResp, nil
 
 }
