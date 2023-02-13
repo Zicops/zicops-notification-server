@@ -95,8 +95,8 @@ func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pag
 }
 
 // GetAllPaginatedNotifications is the resolver for the getAllPaginatedNotifications field.
-func (r *queryResolver) GetAllPaginatedNotifications(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
-	resp, err := handlers.GetAllPaginatedNotifications(ctx, prevPageSnapShot, pageSize, isRead)
+func (r *queryResolver) GetAllPaginatedNotifications(ctx context.Context, pageIndex int, pageSize int, isRead *bool) ([]*model.FirestoreMessage, error) {
+	resp, err := handlers.GetAllPaginatedNotifications(ctx, pageIndex, pageSize, isRead)
 	if err != nil {
 		log.Println("Error receiving notification list")
 		return nil, err

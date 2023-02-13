@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"log"
-	"strconv"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -152,43 +151,34 @@ func GetAllNotifications(ctx context.Context, prevPageSnapShot string, pageSize 
 	}, nil
 }
 
-func GetAllPaginatedNotifications(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
+func GetAllPaginatedNotifications(ctx context.Context, pageIndex int, pageSize int, isRead *bool) ([]*model.FirestoreMessage, error) {
 
 	var firestoreResp []*model.FirestoreMessage
 	claims, _ := GetClaimsFromContext(ctx)
 	email_creator := claims["email"].(string)
 	lspId := claims["lsp_id"].(string)
 	userId := base64.StdEncoding.EncodeToString([]byte(email_creator))
-	startAfter := prevPageSnapShot
+
 	var iter *firestore.DocumentIterator
 	if isRead != nil {
-		if startAfter == "" {
-			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
-
-		} else {
-			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).StartAfter(startAfter).Documents(ctx)
-		}
+		iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("IsRead", "==", isRead).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Documents(ctx)
 	} else {
-		if startAfter == "" {
-			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).Documents(ctx)
-
-		} else {
-			iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Limit(pageSize).StartAfter(startAfter).Documents(ctx)
-		}
+		iter = global.Client.Collection("notification").Where("UserID", "==", userId).Where("LspID", "==", lspId).OrderBy("CreatedAt", firestore.Desc).Documents(ctx)
 	}
+	//list pageIndex, pageSize
 	tmp, err := iter.GetAll()
 	if err != nil {
 		log.Println(err)
 		return nil, nil
 	}
+
 	var resp []map[string]interface{}
-	lstDoc := tmp[len(tmp)-1]
 	for _, vv := range tmp {
 		v := vv
 		data := v.Data()
 		resp = append(resp, data)
 	}
-	rs, err := lstDoc.DataAt("CreatedAt")
+
 	if err != nil {
 		return nil, err
 	}
@@ -210,12 +200,14 @@ func GetAllPaginatedNotifications(ctx context.Context, prevPageSnapShot string, 
 		//log.Println(tmp.Body, "      ", tmp.Title)
 		firestoreResp = append(firestoreResp, tmp)
 	}
-	//r := lstDoc.Ref.ID
-	ca := rs.(int64)
-	res := strconv.Itoa(int(ca))
-	return &model.PaginatedNotifications{
-		Messages:         firestoreResp,
-		NextPageSnapShot: &res,
-	}, nil
+
+	//pageIndex = 1, size = 10=> start from 0 to pagesize
+	//pageIndex = 2, size = 10 => start from 10 to pagesize
+	// (n-1)*pagesize  to  n*pagesize
+	start := (pageIndex - 1) * pageSize
+	end := pageIndex * pageSize
+	res := firestoreResp[start:end]
+
+	return res, nil
 
 }

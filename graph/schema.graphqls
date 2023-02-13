@@ -54,5 +54,5 @@ type Mutation {
 
 type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
-  getAllPaginatedNotifications(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
+  getAllPaginatedNotifications(pageIndex: Int!, pageSize: Int!, is_read: Boolean): [FirestoreMessage]
 }
