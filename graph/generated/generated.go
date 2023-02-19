@@ -71,7 +71,6 @@ type ComplexityRoot struct {
 		GetFCMToken              func(childComplexity int) int
 		SendEmail                func(childComplexity int, to []*string, senderName string, userName []*string, body string, templateID string) int
 		SendEmailUserID          func(childComplexity int, userID []*string, senderName string, userName []*string, body string, templateID string) int
-		SendNotification         func(childComplexity int, notification model.NotificationInput) int
 		SendNotificationWithLink func(childComplexity int, notification model.NotificationInput, link string) int
 	}
 
@@ -92,7 +91,6 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	SendNotificationWithLink(ctx context.Context, notification model.NotificationInput, link string) ([]*model.Notification, error)
-	SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error)
 	AddToFirestore(ctx context.Context, message []*model.FirestoreDataInput) (string, error)
 	SendEmail(ctx context.Context, to []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
 	GetFCMToken(ctx context.Context) (string, error)
@@ -281,18 +279,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SendEmailUserID(childComplexity, args["user_id"].([]*string), args["sender_name"].(string), args["user_name"].([]*string), args["body"].(string), args["template_id"].(string)), true
 
-	case "Mutation.sendNotification":
-		if e.complexity.Mutation.SendNotification == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_sendNotification_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.SendNotification(childComplexity, args["notification"].(model.NotificationInput)), true
-
 	case "Mutation.sendNotificationWithLink":
 		if e.complexity.Mutation.SendNotificationWithLink == nil {
 			break
@@ -466,7 +452,6 @@ type PaginatedNotifications {
 
 type Mutation {
   sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
-  sendNotification(notification: NotificationInput!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
   sendEmail(to_: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   getFCMToken: String!
@@ -623,21 +608,6 @@ func (ec *executionContext) field_Mutation_sendNotificationWithLink_args(ctx con
 		}
 	}
 	args["link"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_sendNotification_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.NotificationInput
-	if tmp, ok := rawArgs["notification"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notification"))
-		arg0, err = ec.unmarshalNNotificationInput2githubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐNotificationInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["notification"] = arg0
 	return args, nil
 }
 
@@ -1514,65 +1484,6 @@ func (ec *executionContext) fieldContext_Mutation_sendNotificationWithLink(ctx c
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_sendNotificationWithLink_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_sendNotification(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SendNotification(rctx, fc.Args["notification"].(model.NotificationInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Notification)
-	fc.Result = res
-	return ec.marshalNNotification2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐNotification(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "statuscode":
-				return ec.fieldContext_Notification_statuscode(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Notification", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_sendNotification_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4281,15 +4192,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_sendNotificationWithLink(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "sendNotification":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_sendNotification(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {

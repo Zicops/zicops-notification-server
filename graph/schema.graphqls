@@ -44,7 +44,6 @@ type PaginatedNotifications {
 
 type Mutation {
   sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
-  sendNotification(notification: NotificationInput!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
   sendEmail(to_: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   getFCMToken: String!

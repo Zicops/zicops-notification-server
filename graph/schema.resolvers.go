@@ -22,16 +22,6 @@ func (r *mutationResolver) SendNotificationWithLink(ctx context.Context, notific
 	return resp, err
 }
 
-// SendNotification is the resolver for the sendNotification field.
-func (r *mutationResolver) SendNotification(ctx context.Context, notification model.NotificationInput) ([]*model.Notification, error) {
-	resp, err := handlers.SendNotification(ctx, notification)
-	if err != nil {
-		log.Printf("Error sending notification %v", err)
-		return nil, err
-	}
-	return resp, err
-}
-
 // AddToFirestore is the resolver for the addToFirestore field.
 func (r *mutationResolver) AddToFirestore(ctx context.Context, message []*model.FirestoreDataInput) (string, error) {
 	resp, err := handlers.AddToDatastore(ctx, message)

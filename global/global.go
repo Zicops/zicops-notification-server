@@ -8,6 +8,7 @@ import (
 
 	firestore "cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 
 	"github.com/robfig/cron/v3"
 	lib "github.com/zicops/zicops-notification-server/lib"
@@ -16,9 +17,10 @@ import (
 )
 
 var (
-	App    *firebase.App
-	Client *firestore.Client
-	Ct     = context.Background()
+	App       *firebase.App
+	Client    *firestore.Client
+	Ct        = context.Background()
+	Messanger *messaging.Client
 )
 
 func init() {
@@ -47,6 +49,11 @@ func init() {
 		log.Printf("Error while initialising firestore %v", err)
 	}
 
+	messanger, err := App.Messaging(Ct)
+	if err != nil {
+		log.Printf("Error while initialising messaging: %v", err)
+	}
+	Messanger = messanger
 	//scheduler
 	deleteNotifications()
 	//sch()
@@ -58,6 +65,7 @@ func deleteNotifications() {
 	c.AddFunc("0 2 * * 5", sch)
 	c.AddFunc("20 0 * * *", deleteNullTokens)
 
+	c.Start()
 }
 
 func deleteNullTokens() {
