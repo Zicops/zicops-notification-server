@@ -193,6 +193,9 @@ func GetAllPaginatedNotifications(ctx context.Context, pageIndex int, pageSize i
 	} else {
 		end = pageIndex * pageSize
 	}
+	if start == end {
+		return nil, nil
+	}
 
 	resp = resp[start:end]
 
