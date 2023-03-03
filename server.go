@@ -9,9 +9,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/robfig/cron/v3"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph"
 	"github.com/zicops/zicops-notification-server/graph/generated"
+	"github.com/zicops/zicops-notification-server/handlers"
 
 	"github.com/zicops/zicops-notification-server/jwt"
 )
@@ -33,6 +35,18 @@ func main() {
 	router.Handle("/query", srv)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 	defer global.Client.Close()
+
+	c := cron.New()
+	c.AddFunc("0 2 * * 5", sch)
+
+	c.Start()
+}
+
+func sch() {
+	_, err := handlers.Auth_tokens(global.Ct)
+	if err != nil {
+		log.Printf("Got error while deleting tokens: %v", err)
+	}
 }
 
 func Middleware() func(http.Handler) http.Handler {

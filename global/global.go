@@ -11,7 +11,6 @@ import (
 	"firebase.google.com/go/messaging"
 
 	"github.com/robfig/cron/v3"
-	"github.com/zicops/zicops-notification-server/handlers"
 	lib "github.com/zicops/zicops-notification-server/lib"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -94,10 +93,6 @@ func deleteNullTokens() {
 		}
 	}
 
-	_, err := handlers.Auth_tokens(Ct)
-	if err != nil {
-		log.Printf("Got error while deleting null redundant tokens: %v", err)
-	}
 }
 
 func sch() {
