@@ -84,8 +84,12 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 				Notification: s,
 			}
 
+			var e string
 			code, err := sendToFirebase(m, ctx)
-			e := err.Error()
+			if err != nil {
+				e = err.Error()
+			}
+
 			if code == 0 {
 				res = append(res, &model.Notification{
 					Statuscode: strconv.Itoa(code),
