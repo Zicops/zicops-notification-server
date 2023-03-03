@@ -85,12 +85,22 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 			}
 
 			code, err := sendToFirebase(m, ctx)
+			e := err.Error()
 			if code == 0 {
-				return nil, err
+				res = append(res, &model.Notification{
+					Statuscode: strconv.Itoa(code),
+					UserID:     userId,
+					Error:      &e,
+				})
 			}
-			res = append(res, &model.Notification{
-				Statuscode: strconv.Itoa(code),
-			})
+			if code == 1 {
+				res = append(res, &model.Notification{
+					Statuscode: strconv.Itoa(code),
+					UserID:     userId,
+					Error:      nil,
+				})
+			}
+
 			temp := message{
 				Notification: s,
 				To:           v["FCM-token"].(string),

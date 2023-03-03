@@ -75,7 +75,9 @@ type ComplexityRoot struct {
 	}
 
 	Notification struct {
+		Error      func(childComplexity int) int
 		Statuscode func(childComplexity int) int
+		UserID     func(childComplexity int) int
 	}
 
 	PaginatedNotifications struct {
@@ -291,12 +293,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SendNotificationWithLink(childComplexity, args["notification"].(model.NotificationInput), args["link"].(string)), true
 
+	case "Notification.error":
+		if e.complexity.Notification.Error == nil {
+			break
+		}
+
+		return e.complexity.Notification.Error(childComplexity), true
+
 	case "Notification.statuscode":
 		if e.complexity.Notification.Statuscode == nil {
 			break
 		}
 
 		return e.complexity.Notification.Statuscode(childComplexity), true
+
+	case "Notification.user_id":
+		if e.complexity.Notification.UserID == nil {
+			break
+		}
+
+		return e.complexity.Notification.UserID(childComplexity), true
 
 	case "PaginatedNotifications.messages":
 		if e.complexity.PaginatedNotifications.Messages == nil {
@@ -414,6 +430,8 @@ var sources = []*ast.Source{
 
 type Notification {
   statuscode: String!
+  error: String
+  user_id: String
 }
 
 type FirestoreMessage {
@@ -1472,6 +1490,10 @@ func (ec *executionContext) fieldContext_Mutation_sendNotificationWithLink(ctx c
 			switch field.Name {
 			case "statuscode":
 				return ec.fieldContext_Notification_statuscode(ctx, field)
+			case "error":
+				return ec.fieldContext_Notification_error(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Notification_user_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Notification", field.Name)
 		},
@@ -1769,6 +1791,88 @@ func (ec *executionContext) _Notification_statuscode(ctx context.Context, field 
 }
 
 func (ec *executionContext) fieldContext_Notification_statuscode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Notification_error(ctx context.Context, field graphql.CollectedField, obj *model.Notification) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Notification_error(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Error, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Notification_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Notification_user_id(ctx context.Context, field graphql.CollectedField, obj *model.Notification) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Notification_user_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Notification_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Notification",
 		Field:      field,
@@ -4264,6 +4368,14 @@ func (ec *executionContext) _Notification(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "error":
+
+			out.Values[i] = ec._Notification_error(ctx, field, obj)
+
+		case "user_id":
+
+			out.Values[i] = ec._Notification_user_id(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

@@ -32,7 +32,9 @@ type FirestoreMessage struct {
 }
 
 type Notification struct {
-	Statuscode string `json:"statuscode"`
+	Statuscode string  `json:"statuscode"`
+	Error      *string `json:"error"`
+	UserID     *string `json:"user_id"`
 }
 
 type NotificationInput struct {

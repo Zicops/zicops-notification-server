@@ -6,6 +6,8 @@ input NotificationInput {
 
 type Notification {
   statuscode: String!
+  error: String
+  user_id: String
 }
 
 type FirestoreMessage {
