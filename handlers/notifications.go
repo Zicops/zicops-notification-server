@@ -84,7 +84,10 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 				Notification: s,
 			}
 
-			code := sendToFirebase(m, ctx)
+			code, err := sendToFirebase(m, ctx)
+			if code == 0 {
+				return nil, err
+			}
 			res = append(res, &model.Notification{
 				Statuscode: strconv.Itoa(code),
 			})
@@ -133,18 +136,21 @@ func sendingToFirestore(msg firebaseData, userId string) {
 	}
 }
 
-func sendToFirebase(message messaging.Message, ctx context.Context) int {
+func sendToFirebase(message messaging.Message, ctx context.Context) (int, error) {
 
 	//sending request
 	v, err := global.Messanger.Send(ctx, &message)
 	if err != nil {
 		log.Printf("Got error: %v", err)
 	}
+	if len(v) == 0 {
+		return 0, err
+	}
 	if v[:29] == "projects/zicops-one/messages/" {
-		return 1
+		return 1, nil
 	}
 
-	return 0
+	return 0, nil
 
 }
 
