@@ -51,9 +51,11 @@ type Mutation {
   getFCMToken: String!
   Auth_tokens: String!
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
+  addUserTags(user_lsp_id: String, tags:[String]): Boolean
 }
 
 type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
   getAllPaginatedNotifications(pageIndex: Int!, pageSize: Int!, is_read: Boolean): [FirestoreMessage]
+  getUserLspIdTags(user_lsp_id: String): [String]
 }

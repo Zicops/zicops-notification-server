@@ -67,6 +67,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AddToFirestore           func(childComplexity int, message []*model.FirestoreDataInput) int
+		AddUserTags              func(childComplexity int, userLspID *string, tags []*string) int
 		AuthTokens               func(childComplexity int) int
 		GetFCMToken              func(childComplexity int) int
 		SendEmail                func(childComplexity int, to []*string, senderName string, userName []*string, body string, templateID string) int
@@ -88,6 +89,7 @@ type ComplexityRoot struct {
 	Query struct {
 		GetAll                       func(childComplexity int, prevPageSnapShot string, pageSize int, isRead *bool) int
 		GetAllPaginatedNotifications func(childComplexity int, pageIndex int, pageSize int, isRead *bool) int
+		GetUserLspIDTags             func(childComplexity int, userLspID *string) int
 	}
 }
 
@@ -98,10 +100,12 @@ type MutationResolver interface {
 	GetFCMToken(ctx context.Context) (string, error)
 	AuthTokens(ctx context.Context) (string, error)
 	SendEmailUserID(ctx context.Context, userID []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
+	AddUserTags(ctx context.Context, userLspID *string, tags []*string) (*bool, error)
 }
 type QueryResolver interface {
 	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
 	GetAllPaginatedNotifications(ctx context.Context, pageIndex int, pageSize int, isRead *bool) ([]*model.FirestoreMessage, error)
+	GetUserLspIDTags(ctx context.Context, userLspID *string) ([]*string, error)
 }
 
 type executableSchema struct {
@@ -243,6 +247,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.AddToFirestore(childComplexity, args["message"].([]*model.FirestoreDataInput)), true
 
+	case "Mutation.addUserTags":
+		if e.complexity.Mutation.AddUserTags == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addUserTags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddUserTags(childComplexity, args["user_lsp_id"].(*string), args["tags"].([]*string)), true
+
 	case "Mutation.Auth_tokens":
 		if e.complexity.Mutation.AuthTokens == nil {
 			break
@@ -351,6 +367,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetAllPaginatedNotifications(childComplexity, args["pageIndex"].(int), args["pageSize"].(int), args["is_read"].(*bool)), true
+
+	case "Query.getUserLspIdTags":
+		if e.complexity.Query.GetUserLspIDTags == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getUserLspIdTags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetUserLspIDTags(childComplexity, args["user_lsp_id"].(*string)), true
 
 	}
 	return 0, false
@@ -475,11 +503,13 @@ type Mutation {
   getFCMToken: String!
   Auth_tokens: String!
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
+  addUserTags(user_lsp_id: String, tags:[String]): Boolean
 }
 
 type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
   getAllPaginatedNotifications(pageIndex: Int!, pageSize: Int!, is_read: Boolean): [FirestoreMessage]
+  getUserLspIdTags(user_lsp_id: String): [String]
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -500,6 +530,30 @@ func (ec *executionContext) field_Mutation_addToFirestore_args(ctx context.Conte
 		}
 	}
 	args["message"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_addUserTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["user_lsp_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_lsp_id"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user_lsp_id"] = arg0
+	var arg1 []*string
+	if tmp, ok := rawArgs["tags"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+		arg1, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tags"] = arg1
 	return args, nil
 }
 
@@ -707,6 +761,21 @@ func (ec *executionContext) field_Query_getAll_args(ctx context.Context, rawArgs
 		}
 	}
 	args["is_read"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getUserLspIdTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["user_lsp_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_lsp_id"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user_lsp_id"] = arg0
 	return args, nil
 }
 
@@ -1759,6 +1828,58 @@ func (ec *executionContext) fieldContext_Mutation_sendEmail_UserId(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_addUserTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addUserTags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddUserTags(rctx, fc.Args["user_lsp_id"].(*string), fc.Args["tags"].([]*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addUserTags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addUserTags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Notification_statuscode(ctx context.Context, field graphql.CollectedField, obj *model.Notification) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Notification_statuscode(ctx, field)
 	if err != nil {
@@ -2110,6 +2231,58 @@ func (ec *executionContext) fieldContext_Query_getAllPaginatedNotifications(ctx 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getAllPaginatedNotifications_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getUserLspIdTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getUserLspIdTags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetUserLspIDTags(rctx, fc.Args["user_lsp_id"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getUserLspIdTags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getUserLspIdTags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4340,6 +4513,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 				return ec._Mutation_sendEmail_UserId(ctx, field)
 			})
 
+		case "addUserTags":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addUserTags(ctx, field)
+			})
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4468,6 +4647,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getAllPaginatedNotifications(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getUserLspIdTags":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getUserLspIdTags(ctx, field)
 				return res
 			}
 
