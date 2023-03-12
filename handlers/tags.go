@@ -3,9 +3,11 @@ package handlers
 import (
 	"context"
 	"errors"
+	"log"
 	"unicode"
 
 	"github.com/zicops/zicops-notification-server/global"
+	"google.golang.org/api/iterator"
 )
 
 func AddUserTags(ctx context.Context, userLspID *string, tags []*string) (*bool, error) {
@@ -65,4 +67,45 @@ func isASCII(s string) bool {
 		}
 	}
 	return true
+}
+
+func GetTagUsers(ctx context.Context, tags []*string) ([]*string, error) {
+	_, err := GetClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var tmp []string
+	var tagsArray []string
+	for _, vv := range tags {
+		v := *vv
+		tagsArray = append(tagsArray, v)
+	}
+	iter := global.Client.Collection("userLspIdTags").Where("Tags", "array-contains-any", tagsArray).Documents(ctx)
+
+	for {
+		doc, err := iter.Next()
+		//see if iterator is done
+		if err == iterator.Done {
+			break
+		}
+
+		//see if the error is no more items in iterator
+		if err != nil && err.Error() == "no more items in iterator" {
+			break
+			//return nil, nil
+		}
+
+		if err != nil {
+			log.Fatalf("Failed to iterate: %v", err)
+			return nil, err
+		}
+		tmp = append(tmp, doc.Ref.ID)
+	}
+
+	var res []*string
+	for _, v := range tmp {
+		vv := v
+		res = append(res, &vv)
+	}
+	return res, nil
 }

@@ -114,6 +114,16 @@ func (r *queryResolver) GetUserLspIDTags(ctx context.Context, userLspID *string)
 	return resp, nil
 }
 
+// GetTagUsers is the resolver for the getTagUsers field.
+func (r *queryResolver) GetTagUsers(ctx context.Context, tags []*string) ([]*string, error) {
+	resp, err := handlers.GetTagUsers(ctx, tags)
+	if err != nil {
+		log.Printf("Error receiving user tags: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
