@@ -22,6 +22,9 @@ func AddUserTags(ctx context.Context, userLspID *string, tags []*string) (*bool,
 	id := *userLspID
 	var tagsArray []string
 	for _, vv := range tags {
+		if vv == nil {
+			continue
+		}
 		v := *vv
 		if isASCII(v) {
 			tagsArray = append(tagsArray, v)
@@ -77,6 +80,9 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*string, error) {
 	var tmp []string
 	var tagsArray []string
 	for _, vv := range tags {
+		if vv == nil {
+			continue
+		}
 		v := *vv
 		tagsArray = append(tagsArray, v)
 	}
