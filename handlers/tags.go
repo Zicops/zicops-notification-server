@@ -173,6 +173,5 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error)
 
 	}
 	wg.Wait()
-
 	return res, nil
 }
