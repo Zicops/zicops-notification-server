@@ -44,6 +44,12 @@ type PaginatedNotifications {
   nextPageSnapShot: String
 }
 
+type TagsData {
+  user_lsp_id: String
+  user_id: String
+  tags: [String]
+}
+
 type Mutation {
   sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
@@ -51,12 +57,12 @@ type Mutation {
   getFCMToken: String!
   Auth_tokens: String!
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
-  addUserTags(user_lsp_id: String, tags:[String]): Boolean
+  addUserTags(user_lsp_id: String, user_id: String, tags:[String]): Boolean
 }
 
 type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
   getAllPaginatedNotifications(pageIndex: Int!, pageSize: Int!, is_read: Boolean): [FirestoreMessage]
-  getUserLspIdTags(user_lsp_id: String): [String]
-  getTagUsers(tags:[String]): [String]
+  getUserLspIdTags(user_lsp_id: [String]): [TagsData]
+  getTagUsers(tags:[String]): [TagsData]
 }

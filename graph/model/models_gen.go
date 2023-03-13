@@ -47,3 +47,9 @@ type PaginatedNotifications struct {
 	Messages         []*FirestoreMessage `json:"messages"`
 	NextPageSnapShot *string             `json:"nextPageSnapShot"`
 }
+
+type TagsData struct {
+	UserLspID *string   `json:"user_lsp_id"`
+	UserID    *string   `json:"user_id"`
+	Tags      []*string `json:"tags"`
+}

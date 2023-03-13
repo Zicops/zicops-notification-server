@@ -4,22 +4,26 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strings"
+	"sync"
 	"unicode"
 
 	"github.com/zicops/zicops-notification-server/global"
+	"github.com/zicops/zicops-notification-server/graph/model"
 	"google.golang.org/api/iterator"
 )
 
-func AddUserTags(ctx context.Context, userLspID *string, tags []*string) (*bool, error) {
+func AddUserTags(ctx context.Context, userLspID *string, userId *string, tags []*string) (*bool, error) {
 	_, err := GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if tags == nil || userLspID == nil {
-		return nil, errors.New("please enter both userLspId and tags")
+	if tags == nil || userLspID == nil || userId == nil {
+		return nil, errors.New("please enter all the values of userLspId, userId and tags")
 	}
 	id := *userLspID
+	uId := *userId
 	var tagsArray []string
 	for _, vv := range tags {
 		if vv == nil {
@@ -33,7 +37,8 @@ func AddUserTags(ctx context.Context, userLspID *string, tags []*string) (*bool,
 		}
 	}
 	_, err = global.Client.Collection("userLspIdTags").Doc(id).Set(ctx, map[string]interface{}{
-		"Tags": tagsArray,
+		"Tags":   tagsArray,
+		"UserId": uId,
 	})
 	if err != nil {
 		return nil, err
@@ -42,24 +47,48 @@ func AddUserTags(ctx context.Context, userLspID *string, tags []*string) (*bool,
 	return &res, nil
 }
 
-func GetUserLspIDTags(ctx context.Context, userLspID *string) ([]*string, error) {
+func GetUserLspIDTags(ctx context.Context, userLspID []*string) ([]*model.TagsData, error) {
 	_, err := GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	snap, err := global.Client.Collection("userLspIdTags").Doc(*userLspID).Get(ctx)
-	if err != nil {
-		return nil, err
+	if len(userLspID) == 0 {
+		return nil, errors.New("please provide userLspIds")
 	}
-	data := snap.Data()
-	tags := data["Tags"].([]interface{})
 
-	var res []*string
-	for _, v := range tags {
-		tmp := v.(string)
-		res = append(res, &tmp)
+	res := make([]*model.TagsData, len(userLspID))
+	var wg sync.WaitGroup
+	for kk, vvv := range userLspID {
+		vv := vvv
+		wg.Add(1)
+		go func(v *string, k int) {
+			defer wg.Done()
+			snap, err := global.Client.Collection("userLspIdTags").Doc(*v).Get(ctx)
+			if err != nil {
+				log.Printf("Got error while getting data: %v", err)
+				return
+			}
+			data := snap.Data()
+			tags := data["Tags"].([]interface{})
+			userId := data["UserId"].(string)
+
+			var tagsArray []*string
+			for _, v := range tags {
+				tmp := v.(string)
+				tagsArray = append(tagsArray, &tmp)
+			}
+
+			tmp := model.TagsData{
+				UserLspID: v,
+				UserID:    &userId,
+				Tags:      tagsArray,
+			}
+			res[k] = &tmp
+
+		}(vv, kk)
 	}
+	wg.Wait()
+
 	return res, nil
 }
 
@@ -72,10 +101,13 @@ func isASCII(s string) bool {
 	return true
 }
 
-func GetTagUsers(ctx context.Context, tags []*string) ([]*string, error) {
+func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error) {
 	_, err := GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
+	}
+	if len(tags) == 0 {
+		return nil, errors.New("please provide tags")
 	}
 	var tmp []string
 	var tagsArray []string
@@ -84,9 +116,11 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*string, error) {
 			continue
 		}
 		v := *vv
+		v = strings.ToLower(v)
 		tagsArray = append(tagsArray, v)
 	}
 	iter := global.Client.Collection("userLspIdTags").Where("Tags", "array-contains-any", tagsArray).Documents(ctx)
+	var maps []map[string]interface{}
 
 	for {
 		doc, err := iter.Next()
@@ -106,12 +140,39 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*string, error) {
 			return nil, err
 		}
 		tmp = append(tmp, doc.Ref.ID)
+		maps = append(maps, doc.Data())
+	}
+	if maps == nil {
+		return nil, nil
 	}
 
-	var res []*string
-	for _, v := range tmp {
-		vv := v
-		res = append(res, &vv)
+	res := make([]*model.TagsData, len(maps))
+	var wg sync.WaitGroup
+	for kk, vvv := range maps {
+		wg.Add(1)
+		vv := vvv
+		go func(k int, v map[string]interface{}) {
+			defer wg.Done()
+			tagsInterface := v["Tags"].([]interface{})
+			var allTags []*string
+			for _, v := range tagsInterface {
+				tmp := v.(string)
+				allTags = append(allTags, &tmp)
+			}
+
+			userLspId := tmp[k]
+			userId := v["UserId"].(string)
+			tmp := model.TagsData{
+				UserLspID: &userLspId,
+				UserID:    &userId,
+				Tags:      allTags,
+			}
+			res[k] = &tmp
+
+		}(kk, vv)
+
 	}
+	wg.Wait()
+
 	return res, nil
 }

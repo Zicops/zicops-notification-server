@@ -75,8 +75,8 @@ func (r *mutationResolver) SendEmailUserID(ctx context.Context, userID []*string
 }
 
 // AddUserTags is the resolver for the addUserTags field.
-func (r *mutationResolver) AddUserTags(ctx context.Context, userLspID *string, tags []*string) (*bool, error) {
-	resp, err := handlers.AddUserTags(ctx, userLspID, tags)
+func (r *mutationResolver) AddUserTags(ctx context.Context, userLspID *string, userID *string, tags []*string) (*bool, error) {
+	resp, err := handlers.AddUserTags(ctx, userLspID, userID, tags)
 	if err != nil {
 		log.Printf("Got error while setting uesr tags: %v", err)
 		return nil, err
@@ -105,7 +105,7 @@ func (r *queryResolver) GetAllPaginatedNotifications(ctx context.Context, pageIn
 }
 
 // GetUserLspIDTags is the resolver for the getUserLspIdTags field.
-func (r *queryResolver) GetUserLspIDTags(ctx context.Context, userLspID *string) ([]*string, error) {
+func (r *queryResolver) GetUserLspIDTags(ctx context.Context, userLspID []*string) ([]*model.TagsData, error) {
 	resp, err := handlers.GetUserLspIDTags(ctx, userLspID)
 	if err != nil {
 		log.Printf("Error receiving user tags: %v", err)
@@ -115,7 +115,7 @@ func (r *queryResolver) GetUserLspIDTags(ctx context.Context, userLspID *string)
 }
 
 // GetTagUsers is the resolver for the getTagUsers field.
-func (r *queryResolver) GetTagUsers(ctx context.Context, tags []*string) ([]*string, error) {
+func (r *queryResolver) GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error) {
 	resp, err := handlers.GetTagUsers(ctx, tags)
 	if err != nil {
 		log.Printf("Error receiving user tags: %v", err)
