@@ -52,4 +52,10 @@ type TagsData struct {
 	UserLspID *string   `json:"user_lsp_id"`
 	UserID    *string   `json:"user_id"`
 	Tags      []*string `json:"tags"`
+	LspID     *string   `json:"lsp_id"`
+}
+
+type UserDetails struct {
+	UserID    *string `json:"user_id"`
+	UserLspID *string `json:"user_lsp_id"`
 }

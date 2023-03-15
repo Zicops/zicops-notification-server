@@ -75,8 +75,8 @@ func (r *mutationResolver) SendEmailUserID(ctx context.Context, userID []*string
 }
 
 // AddUserTags is the resolver for the addUserTags field.
-func (r *mutationResolver) AddUserTags(ctx context.Context, userLspID *string, userID *string, tags []*string) (*bool, error) {
-	resp, err := handlers.AddUserTags(ctx, userLspID, userID, tags)
+func (r *mutationResolver) AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) (*bool, error) {
+	resp, err := handlers.AddUserTags(ctx, ids, tags)
 	if err != nil {
 		log.Printf("Got error while setting uesr tags: %v", err)
 		return nil, err

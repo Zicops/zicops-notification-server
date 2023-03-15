@@ -67,7 +67,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AddToFirestore           func(childComplexity int, message []*model.FirestoreDataInput) int
-		AddUserTags              func(childComplexity int, userLspID *string, userID *string, tags []*string) int
+		AddUserTags              func(childComplexity int, ids []*model.UserDetails, tags []*string) int
 		AuthTokens               func(childComplexity int) int
 		GetFCMToken              func(childComplexity int) int
 		SendEmail                func(childComplexity int, to []*string, senderName string, userName []*string, body string, templateID string) int
@@ -94,6 +94,7 @@ type ComplexityRoot struct {
 	}
 
 	TagsData struct {
+		LspID     func(childComplexity int) int
 		Tags      func(childComplexity int) int
 		UserID    func(childComplexity int) int
 		UserLspID func(childComplexity int) int
@@ -107,7 +108,7 @@ type MutationResolver interface {
 	GetFCMToken(ctx context.Context) (string, error)
 	AuthTokens(ctx context.Context) (string, error)
 	SendEmailUserID(ctx context.Context, userID []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
-	AddUserTags(ctx context.Context, userLspID *string, userID *string, tags []*string) (*bool, error)
+	AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) (*bool, error)
 }
 type QueryResolver interface {
 	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
@@ -265,7 +266,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddUserTags(childComplexity, args["user_lsp_id"].(*string), args["user_id"].(*string), args["tags"].([]*string)), true
+		return e.complexity.Mutation.AddUserTags(childComplexity, args["ids"].([]*model.UserDetails), args["tags"].([]*string)), true
 
 	case "Mutation.Auth_tokens":
 		if e.complexity.Mutation.AuthTokens == nil {
@@ -400,6 +401,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetUserLspIDTags(childComplexity, args["user_lsp_id"].([]*string)), true
 
+	case "TagsData.lsp_id":
+		if e.complexity.TagsData.LspID == nil {
+			break
+		}
+
+		return e.complexity.TagsData.LspID(childComplexity), true
+
 	case "TagsData.tags":
 		if e.complexity.TagsData.Tags == nil {
 			break
@@ -431,6 +439,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputFirestoreDataInput,
 		ec.unmarshalInputNotificationInput,
+		ec.unmarshalInputUserDetails,
 	)
 	first := true
 
@@ -541,6 +550,12 @@ type TagsData {
   user_lsp_id: String
   user_id: String
   tags: [String]
+  lsp_id: String
+}
+
+input UserDetails {
+  user_id: String
+  user_lsp_id: String
 }
 
 type Mutation {
@@ -550,8 +565,9 @@ type Mutation {
   getFCMToken: String!
   Auth_tokens: String!
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
-  addUserTags(user_lsp_id: String, user_id: String, tags:[String]): Boolean
+  addUserTags(ids: [UserDetails], tags:[String]): Boolean
 }
+#all the tags, lsp from tenant, 
 
 type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
@@ -584,33 +600,24 @@ func (ec *executionContext) field_Mutation_addToFirestore_args(ctx context.Conte
 func (ec *executionContext) field_Mutation_addUserTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["user_lsp_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_lsp_id"))
-		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+	var arg0 []*model.UserDetails
+	if tmp, ok := rawArgs["ids"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
+		arg0, err = ec.unmarshalOUserDetails2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐUserDetails(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["user_lsp_id"] = arg0
-	var arg1 *string
-	if tmp, ok := rawArgs["user_id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["user_id"] = arg1
-	var arg2 []*string
+	args["ids"] = arg0
+	var arg1 []*string
 	if tmp, ok := rawArgs["tags"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
-		arg2, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		arg1, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["tags"] = arg2
+	args["tags"] = arg1
 	return args, nil
 }
 
@@ -1914,7 +1921,7 @@ func (ec *executionContext) _Mutation_addUserTags(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddUserTags(rctx, fc.Args["user_lsp_id"].(*string), fc.Args["user_id"].(*string), fc.Args["tags"].([]*string))
+		return ec.resolvers.Mutation().AddUserTags(rctx, fc.Args["ids"].([]*model.UserDetails), fc.Args["tags"].([]*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2351,6 +2358,8 @@ func (ec *executionContext) fieldContext_Query_getUserLspIdTags(ctx context.Cont
 				return ec.fieldContext_TagsData_user_id(ctx, field)
 			case "tags":
 				return ec.fieldContext_TagsData_tags(ctx, field)
+			case "lsp_id":
+				return ec.fieldContext_TagsData_lsp_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TagsData", field.Name)
 		},
@@ -2411,6 +2420,8 @@ func (ec *executionContext) fieldContext_Query_getTagUsers(ctx context.Context, 
 				return ec.fieldContext_TagsData_user_id(ctx, field)
 			case "tags":
 				return ec.fieldContext_TagsData_tags(ctx, field)
+			case "lsp_id":
+				return ec.fieldContext_TagsData_lsp_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TagsData", field.Name)
 		},
@@ -2669,6 +2680,47 @@ func (ec *executionContext) _TagsData_tags(ctx context.Context, field graphql.Co
 }
 
 func (ec *executionContext) fieldContext_TagsData_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TagsData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TagsData_lsp_id(ctx context.Context, field graphql.CollectedField, obj *model.TagsData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TagsData_lsp_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LspID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TagsData_lsp_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagsData",
 		Field:      field,
@@ -4550,6 +4602,42 @@ func (ec *executionContext) unmarshalInputNotificationInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUserDetails(ctx context.Context, obj interface{}) (model.UserDetails, error) {
+	var it model.UserDetails
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"user_id", "user_lsp_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "user_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			it.UserID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_lsp_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_lsp_id"))
+			it.UserLspID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -5004,6 +5092,10 @@ func (ec *executionContext) _TagsData(ctx context.Context, sel ast.SelectionSet,
 		case "tags":
 
 			out.Values[i] = ec._TagsData_tags(ctx, field, obj)
+
+		case "lsp_id":
+
+			out.Values[i] = ec._TagsData_lsp_id(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -5984,6 +6076,34 @@ func (ec *executionContext) marshalOTagsData2ᚖgithubᚗcomᚋzicopsᚋzicops�
 		return graphql.Null
 	}
 	return ec._TagsData(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUserDetails2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐUserDetails(ctx context.Context, v interface{}) ([]*model.UserDetails, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.UserDetails, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOUserDetails2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐUserDetails(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOUserDetails2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐUserDetails(ctx context.Context, v interface{}) (*model.UserDetails, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputUserDetails(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

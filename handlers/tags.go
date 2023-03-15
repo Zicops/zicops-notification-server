@@ -13,36 +13,43 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func AddUserTags(ctx context.Context, userLspID *string, userId *string, tags []*string) (*bool, error) {
+func AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) (*bool, error) {
 	_, err := GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if tags == nil || userLspID == nil || userId == nil {
-		return nil, errors.New("please enter all the values of userLspId, userId and tags")
-	}
-	id := *userLspID
-	uId := *userId
-	var tagsArray []string
-	for _, vv := range tags {
-		if vv == nil {
-			continue
+	for _, vvv := range ids {
+		value := vvv
+		userLspID := value.UserLspID
+		userId := value.UserID
+		if tags == nil || userLspID == nil || userId == nil {
+			return nil, errors.New("please enter all the values of userLspId, userId and tags")
 		}
-		v := *vv
-		if isASCII(v) {
-			tagsArray = append(tagsArray, v)
-		} else {
-			return nil, errors.New("please enter only ASCII values in tags")
+		id := *userLspID
+		uId := *userId
+		var tagsArray []string
+		for _, vv := range tags {
+			if vv == nil {
+				continue
+			}
+			v := *vv
+			if isASCII(v) {
+				tagsArray = append(tagsArray, v)
+			} else {
+				return nil, errors.New("please enter only ASCII values in tags")
+			}
 		}
+		_, err = global.Client.Collection("userLspIdTags").Doc(id).Set(ctx, map[string]interface{}{
+			"Tags":   tagsArray,
+			"UserId": uId,
+		})
+		if err != nil {
+			return nil, err
+		}
+
 	}
-	_, err = global.Client.Collection("userLspIdTags").Doc(id).Set(ctx, map[string]interface{}{
-		"Tags":   tagsArray,
-		"UserId": uId,
-	})
-	if err != nil {
-		return nil, err
-	}
+
 	res := true
 	return &res, nil
 }

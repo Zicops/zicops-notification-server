@@ -48,6 +48,12 @@ type TagsData {
   user_lsp_id: String
   user_id: String
   tags: [String]
+  lsp_id: String
+}
+
+input UserDetails {
+  user_id: String
+  user_lsp_id: String
 }
 
 type Mutation {
@@ -57,8 +63,9 @@ type Mutation {
   getFCMToken: String!
   Auth_tokens: String!
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
-  addUserTags(user_lsp_id: String, user_id: String, tags:[String]): Boolean
+  addUserTags(ids: [UserDetails], tags:[String]): Boolean
 }
+#all the tags, lsp from tenant, 
 
 type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
