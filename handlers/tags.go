@@ -152,6 +152,9 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error)
 	if maps == nil {
 		return nil, nil
 	}
+	if len(maps) == 0 {
+		return nil, nil
+	}
 
 	res := make([]*model.TagsData, len(maps))
 	var wg sync.WaitGroup
