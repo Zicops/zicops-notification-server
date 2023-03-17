@@ -14,10 +14,11 @@ import (
 )
 
 func AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) (*bool, error) {
-	_, err := GetClaimsFromContext(ctx)
+	claims, err := GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
+	lspId := claims["lsp_id"].(string)
 
 	for _, vvv := range ids {
 		value := vvv
@@ -34,6 +35,7 @@ func AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) 
 				continue
 			}
 			v := *vv
+			v = strings.ToLower(v)
 			if isASCII(v) {
 				tagsArray = append(tagsArray, v)
 			} else {
@@ -43,6 +45,7 @@ func AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) 
 		_, err = global.Client.Collection("userLspIdTags").Doc(id).Set(ctx, map[string]interface{}{
 			"Tags":   tagsArray,
 			"UserId": uId,
+			"LspId":  lspId,
 		})
 		if err != nil {
 			return nil, err
@@ -78,6 +81,7 @@ func GetUserLspIDTags(ctx context.Context, userLspID []*string) ([]*model.TagsDa
 			data := snap.Data()
 			tags := data["Tags"].([]interface{})
 			userId := data["UserId"].(string)
+			lspId := data["LspId"].(string)
 
 			var tagsArray []*string
 			for _, v := range tags {
@@ -89,6 +93,7 @@ func GetUserLspIDTags(ctx context.Context, userLspID []*string) ([]*model.TagsDa
 				UserLspID: v,
 				UserID:    &userId,
 				Tags:      tagsArray,
+				LspID:     &lspId,
 			}
 			res[k] = &tmp
 
@@ -109,10 +114,11 @@ func isASCII(s string) bool {
 }
 
 func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error) {
-	_, err := GetClaimsFromContext(ctx)
+	claims, err := GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
+	lspId := claims["lsp_id"].(string)
 	if len(tags) == 0 {
 		return nil, errors.New("please provide tags")
 	}
@@ -126,7 +132,7 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error)
 		v = strings.ToLower(v)
 		tagsArray = append(tagsArray, v)
 	}
-	iter := global.Client.Collection("userLspIdTags").Where("Tags", "array-contains-any", tagsArray).Documents(ctx)
+	iter := global.Client.Collection("userLspIdTags").Where("Tags", "array-contains-any", tagsArray).Where("LspId", "==", lspId).Documents(ctx)
 	var maps []map[string]interface{}
 
 	for {
@@ -176,6 +182,7 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error)
 				UserLspID: &userLspId,
 				UserID:    &userId,
 				Tags:      allTags,
+				LspID:     &lspId,
 			}
 			res[k] = &tmp
 
