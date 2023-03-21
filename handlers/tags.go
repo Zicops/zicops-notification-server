@@ -22,6 +22,9 @@ func AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) 
 
 	for _, vvv := range ids {
 		value := vvv
+		if value == nil {
+			continue
+		}
 		userLspID := value.UserLspID
 		userId := value.UserID
 		if tags == nil || userLspID == nil || userId == nil {
@@ -70,6 +73,9 @@ func GetUserLspIDTags(ctx context.Context, userLspID []*string) ([]*model.TagsDa
 	var wg sync.WaitGroup
 	for kk, vvv := range userLspID {
 		vv := vvv
+		if vv == nil {
+			continue
+		}
 		wg.Add(1)
 		go func(v *string, k int) {
 			defer wg.Done()
