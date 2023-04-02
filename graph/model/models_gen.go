@@ -2,6 +2,28 @@
 
 package model
 
+type ClassRoomFlags struct {
+	ID                    *string `json:"id"`
+	IsClassroomStarted    *bool   `json:"is_classroom_started"`
+	IsParticipantsPresent *bool   `json:"is_participants_present"`
+	IsAdDisplayed         *bool   `json:"is__ad_displayed"`
+	IsBreak               *bool   `json:"is_break"`
+	IsModeratorJoined     *bool   `json:"is_moderator_joined"`
+	IsTrainerJoined       *bool   `json:"is_trainer_joined"`
+	AdVideoURL            *string `json:"ad_video_url"`
+}
+
+type ClassRoomFlagsInput struct {
+	ID                    *string `json:"id"`
+	IsClassroomStarted    *bool   `json:"is_classroom_started"`
+	IsParticipantsPresent *bool   `json:"is_participants_present"`
+	IsAdDisplayed         *bool   `json:"is__ad_displayed"`
+	IsBreak               *bool   `json:"is_break"`
+	IsModeratorJoined     *bool   `json:"is_moderator_joined"`
+	IsTrainerJoined       *bool   `json:"is_trainer_joined"`
+	AdVideoURL            *string `json:"ad_video_url"`
+}
+
 type FirestoreData struct {
 	Title     string  `json:"title"`
 	Body      string  `json:"body"`

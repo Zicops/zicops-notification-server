@@ -56,6 +56,28 @@ input UserDetails {
   user_lsp_id: String
 }
 
+input ClassRoomFlagsInput {
+  id: String
+  is_classroom_started: Boolean
+  is_participants_present: Boolean
+  is__ad_displayed: Boolean
+  is_break: Boolean
+  is_moderator_joined: Boolean
+  is_trainer_joined: Boolean
+  ad_video_url: String
+} 
+
+type ClassRoomFlags {
+  id: String
+  is_classroom_started: Boolean
+  is_participants_present: Boolean
+  is__ad_displayed: Boolean
+  is_break: Boolean
+  is_moderator_joined: Boolean
+  is_trainer_joined: Boolean
+  ad_video_url: String
+}
+
 type Mutation {
   sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
@@ -64,8 +86,8 @@ type Mutation {
   Auth_tokens: String!
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   addUserTags(ids: [UserDetails], tags:[String]): Boolean
+  addClassroomFlags(input: ClassRoomFlagsInput): ClassRoomFlags
 }
-#all the tags, lsp from tenant, 
 
 type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications

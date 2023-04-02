@@ -84,6 +84,16 @@ func (r *mutationResolver) AddUserTags(ctx context.Context, ids []*model.UserDet
 	return resp, nil
 }
 
+// AddClassroomFlags is the resolver for the addClassroomFlags field.
+func (r *mutationResolver) AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*model.ClassRoomFlags, error) {
+	resp, err := handlers.AddClassroomFlags(ctx, input)
+	if err != nil {
+		log.Printf("Got error while setting topic classroom flags: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // GetAll is the resolver for the getAll field.
 func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
 	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize, isRead)
