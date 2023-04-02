@@ -43,6 +43,17 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	ClassRoomFlags struct {
+		AdVideoURL            func(childComplexity int) int
+		ID                    func(childComplexity int) int
+		IsAdDisplayed         func(childComplexity int) int
+		IsBreak               func(childComplexity int) int
+		IsClassroomStarted    func(childComplexity int) int
+		IsModeratorJoined     func(childComplexity int) int
+		IsParticipantsPresent func(childComplexity int) int
+		IsTrainerJoined       func(childComplexity int) int
+	}
+
 	FirestoreData struct {
 		Body      func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
@@ -66,6 +77,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddClassroomFlags        func(childComplexity int, input *model.ClassRoomFlagsInput) int
 		AddToFirestore           func(childComplexity int, message []*model.FirestoreDataInput) int
 		AddUserTags              func(childComplexity int, ids []*model.UserDetails, tags []*string) int
 		AuthTokens               func(childComplexity int) int
@@ -109,6 +121,7 @@ type MutationResolver interface {
 	AuthTokens(ctx context.Context) (string, error)
 	SendEmailUserID(ctx context.Context, userID []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
 	AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) (*bool, error)
+	AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*model.ClassRoomFlags, error)
 }
 type QueryResolver interface {
 	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
@@ -131,6 +144,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "ClassRoomFlags.ad_video_url":
+		if e.complexity.ClassRoomFlags.AdVideoURL == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.AdVideoURL(childComplexity), true
+
+	case "ClassRoomFlags.id":
+		if e.complexity.ClassRoomFlags.ID == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.ID(childComplexity), true
+
+	case "ClassRoomFlags.is__ad_displayed":
+		if e.complexity.ClassRoomFlags.IsAdDisplayed == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsAdDisplayed(childComplexity), true
+
+	case "ClassRoomFlags.is_break":
+		if e.complexity.ClassRoomFlags.IsBreak == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsBreak(childComplexity), true
+
+	case "ClassRoomFlags.is_classroom_started":
+		if e.complexity.ClassRoomFlags.IsClassroomStarted == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsClassroomStarted(childComplexity), true
+
+	case "ClassRoomFlags.is_moderator_joined":
+		if e.complexity.ClassRoomFlags.IsModeratorJoined == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsModeratorJoined(childComplexity), true
+
+	case "ClassRoomFlags.is_participants_present":
+		if e.complexity.ClassRoomFlags.IsParticipantsPresent == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsParticipantsPresent(childComplexity), true
+
+	case "ClassRoomFlags.is_trainer_joined":
+		if e.complexity.ClassRoomFlags.IsTrainerJoined == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsTrainerJoined(childComplexity), true
 
 	case "FirestoreData.body":
 		if e.complexity.FirestoreData.Body == nil {
@@ -243,6 +312,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FirestoreMessage.UserID(childComplexity), true
+
+	case "Mutation.addClassroomFlags":
+		if e.complexity.Mutation.AddClassroomFlags == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addClassroomFlags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddClassroomFlags(childComplexity, args["input"].(*model.ClassRoomFlagsInput)), true
 
 	case "Mutation.addToFirestore":
 		if e.complexity.Mutation.AddToFirestore == nil {
@@ -437,6 +518,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputClassRoomFlagsInput,
 		ec.unmarshalInputFirestoreDataInput,
 		ec.unmarshalInputNotificationInput,
 		ec.unmarshalInputUserDetails,
@@ -558,6 +640,28 @@ input UserDetails {
   user_lsp_id: String
 }
 
+input ClassRoomFlagsInput {
+  id: String
+  is_classroom_started: Boolean
+  is_participants_present: Boolean
+  is__ad_displayed: Boolean
+  is_break: Boolean
+  is_moderator_joined: Boolean
+  is_trainer_joined: Boolean
+  ad_video_url: String
+} 
+
+type ClassRoomFlags {
+  id: String
+  is_classroom_started: Boolean
+  is_participants_present: Boolean
+  is__ad_displayed: Boolean
+  is_break: Boolean
+  is_moderator_joined: Boolean
+  is_trainer_joined: Boolean
+  ad_video_url: String
+}
+
 type Mutation {
   sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
@@ -566,8 +670,8 @@ type Mutation {
   Auth_tokens: String!
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   addUserTags(ids: [UserDetails], tags:[String]): Boolean
+  addClassroomFlags(input: ClassRoomFlagsInput): ClassRoomFlags
 }
-#all the tags, lsp from tenant, 
 
 type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
@@ -581,6 +685,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_addClassroomFlags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.ClassRoomFlagsInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOClassRoomFlagsInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐClassRoomFlagsInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_addToFirestore_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -895,6 +1014,334 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _ClassRoomFlags_id(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_classroom_started(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_classroom_started(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsClassroomStarted, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_classroom_started(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_participants_present(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_participants_present(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsParticipantsPresent, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_participants_present(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is__ad_displayed(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is__ad_displayed(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsAdDisplayed, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is__ad_displayed(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_break(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_break(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsBreak, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_break(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_moderator_joined(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_moderator_joined(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsModeratorJoined, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_moderator_joined(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_trainer_joined(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_trainer_joined(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsTrainerJoined, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_trainer_joined(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_ad_video_url(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_ad_video_url(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AdVideoURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_ad_video_url(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _FirestoreData_title(ctx context.Context, field graphql.CollectedField, obj *model.FirestoreData) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_FirestoreData_title(ctx, field)
@@ -1953,6 +2400,76 @@ func (ec *executionContext) fieldContext_Mutation_addUserTags(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addUserTags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addClassroomFlags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addClassroomFlags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddClassroomFlags(rctx, fc.Args["input"].(*model.ClassRoomFlagsInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ClassRoomFlags)
+	fc.Result = res
+	return ec.marshalOClassRoomFlags2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐClassRoomFlags(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addClassroomFlags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ClassRoomFlags_id(ctx, field)
+			case "is_classroom_started":
+				return ec.fieldContext_ClassRoomFlags_is_classroom_started(ctx, field)
+			case "is_participants_present":
+				return ec.fieldContext_ClassRoomFlags_is_participants_present(ctx, field)
+			case "is__ad_displayed":
+				return ec.fieldContext_ClassRoomFlags_is__ad_displayed(ctx, field)
+			case "is_break":
+				return ec.fieldContext_ClassRoomFlags_is_break(ctx, field)
+			case "is_moderator_joined":
+				return ec.fieldContext_ClassRoomFlags_is_moderator_joined(ctx, field)
+			case "is_trainer_joined":
+				return ec.fieldContext_ClassRoomFlags_is_trainer_joined(ctx, field)
+			case "ad_video_url":
+				return ec.fieldContext_ClassRoomFlags_ad_video_url(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ClassRoomFlags", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addClassroomFlags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4506,6 +5023,90 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Context, obj interface{}) (model.ClassRoomFlagsInput, error) {
+	var it model.ClassRoomFlagsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "is_classroom_started", "is_participants_present", "is__ad_displayed", "is_break", "is_moderator_joined", "is_trainer_joined", "ad_video_url"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_classroom_started":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_classroom_started"))
+			it.IsClassroomStarted, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_participants_present":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_participants_present"))
+			it.IsParticipantsPresent, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is__ad_displayed":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is__ad_displayed"))
+			it.IsAdDisplayed, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_break":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_break"))
+			it.IsBreak, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_moderator_joined":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_moderator_joined"))
+			it.IsModeratorJoined, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_trainer_joined":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_trainer_joined"))
+			it.IsTrainerJoined, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ad_video_url":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ad_video_url"))
+			it.AdVideoURL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputFirestoreDataInput(ctx context.Context, obj interface{}) (model.FirestoreDataInput, error) {
 	var it model.FirestoreDataInput
 	asMap := map[string]interface{}{}
@@ -4645,6 +5246,59 @@ func (ec *executionContext) unmarshalInputUserDetails(ctx context.Context, obj i
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var classRoomFlagsImplementors = []string{"ClassRoomFlags"}
+
+func (ec *executionContext) _ClassRoomFlags(ctx context.Context, sel ast.SelectionSet, obj *model.ClassRoomFlags) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, classRoomFlagsImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ClassRoomFlags")
+		case "id":
+
+			out.Values[i] = ec._ClassRoomFlags_id(ctx, field, obj)
+
+		case "is_classroom_started":
+
+			out.Values[i] = ec._ClassRoomFlags_is_classroom_started(ctx, field, obj)
+
+		case "is_participants_present":
+
+			out.Values[i] = ec._ClassRoomFlags_is_participants_present(ctx, field, obj)
+
+		case "is__ad_displayed":
+
+			out.Values[i] = ec._ClassRoomFlags_is__ad_displayed(ctx, field, obj)
+
+		case "is_break":
+
+			out.Values[i] = ec._ClassRoomFlags_is_break(ctx, field, obj)
+
+		case "is_moderator_joined":
+
+			out.Values[i] = ec._ClassRoomFlags_is_moderator_joined(ctx, field, obj)
+
+		case "is_trainer_joined":
+
+			out.Values[i] = ec._ClassRoomFlags_is_trainer_joined(ctx, field, obj)
+
+		case "ad_video_url":
+
+			out.Values[i] = ec._ClassRoomFlags_ad_video_url(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var firestoreDataImplementors = []string{"FirestoreData"}
 
@@ -4868,6 +5522,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addUserTags(ctx, field)
+			})
+
+		case "addClassroomFlags":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addClassroomFlags(ctx, field)
 			})
 
 		default:
@@ -5872,6 +6532,21 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOClassRoomFlags2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐClassRoomFlags(ctx context.Context, sel ast.SelectionSet, v *model.ClassRoomFlags) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ClassRoomFlags(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOClassRoomFlagsInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐClassRoomFlagsInput(ctx context.Context, v interface{}) (*model.ClassRoomFlagsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputClassRoomFlagsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOFirestoreDataInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐFirestoreDataInput(ctx context.Context, v interface{}) (*model.FirestoreDataInput, error) {
