@@ -70,6 +70,11 @@ type PaginatedNotifications struct {
 	NextPageSnapShot *string             `json:"nextPageSnapShot"`
 }
 
+type PaginatedTagsData struct {
+	Data             []*TagsData `json:"data"`
+	PrevPageSnapShot *string     `json:"prevPageSnapShot"`
+}
+
 type TagsData struct {
 	UserLspID *string   `json:"user_lsp_id"`
 	UserID    *string   `json:"user_id"`
