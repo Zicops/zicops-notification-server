@@ -51,6 +51,11 @@ type TagsData {
   lsp_id: String
 }
 
+type PaginatedTagsData {
+  data: [TagsData]
+  prevPageSnapShot: ID
+}
+
 input UserDetails {
   user_id: String
   user_lsp_id: String
@@ -93,5 +98,5 @@ type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
   getAllPaginatedNotifications(pageIndex: Int!, pageSize: Int!, is_read: Boolean): [FirestoreMessage]
   getUserLspIdTags(user_lsp_id: [String]): [TagsData]
-  getTagUsers(tags:[String]): [TagsData]
+  getTagUsers(prevPageSnapShot: String, pageSize: Int, tags:[String]): PaginatedTagsData
 }

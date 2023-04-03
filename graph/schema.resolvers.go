@@ -125,8 +125,8 @@ func (r *queryResolver) GetUserLspIDTags(ctx context.Context, userLspID []*strin
 }
 
 // GetTagUsers is the resolver for the getTagUsers field.
-func (r *queryResolver) GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error) {
-	resp, err := handlers.GetTagUsers(ctx, tags)
+func (r *queryResolver) GetTagUsers(ctx context.Context, prevPageSnapShot *string, pageSize *int, tags []*string) (*model.PaginatedTagsData, error) {
+	resp, err := handlers.GetTagUsers(ctx, prevPageSnapShot, pageSize, tags)
 	if err != nil {
 		log.Printf("Error receiving user tags: %v", err)
 		return nil, err

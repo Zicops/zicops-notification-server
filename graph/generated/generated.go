@@ -98,10 +98,15 @@ type ComplexityRoot struct {
 		NextPageSnapShot func(childComplexity int) int
 	}
 
+	PaginatedTagsData struct {
+		Data             func(childComplexity int) int
+		PrevPageSnapShot func(childComplexity int) int
+	}
+
 	Query struct {
 		GetAll                       func(childComplexity int, prevPageSnapShot string, pageSize int, isRead *bool) int
 		GetAllPaginatedNotifications func(childComplexity int, pageIndex int, pageSize int, isRead *bool) int
-		GetTagUsers                  func(childComplexity int, tags []*string) int
+		GetTagUsers                  func(childComplexity int, prevPageSnapShot *string, pageSize *int, tags []*string) int
 		GetUserLspIDTags             func(childComplexity int, userLspID []*string) int
 	}
 
@@ -127,7 +132,7 @@ type QueryResolver interface {
 	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
 	GetAllPaginatedNotifications(ctx context.Context, pageIndex int, pageSize int, isRead *bool) ([]*model.FirestoreMessage, error)
 	GetUserLspIDTags(ctx context.Context, userLspID []*string) ([]*model.TagsData, error)
-	GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error)
+	GetTagUsers(ctx context.Context, prevPageSnapShot *string, pageSize *int, tags []*string) (*model.PaginatedTagsData, error)
 }
 
 type executableSchema struct {
@@ -434,6 +439,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PaginatedNotifications.NextPageSnapShot(childComplexity), true
 
+	case "PaginatedTagsData.data":
+		if e.complexity.PaginatedTagsData.Data == nil {
+			break
+		}
+
+		return e.complexity.PaginatedTagsData.Data(childComplexity), true
+
+	case "PaginatedTagsData.prevPageSnapShot":
+		if e.complexity.PaginatedTagsData.PrevPageSnapShot == nil {
+			break
+		}
+
+		return e.complexity.PaginatedTagsData.PrevPageSnapShot(childComplexity), true
+
 	case "Query.getAll":
 		if e.complexity.Query.GetAll == nil {
 			break
@@ -468,7 +487,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetTagUsers(childComplexity, args["tags"].([]*string)), true
+		return e.complexity.Query.GetTagUsers(childComplexity, args["prevPageSnapShot"].(*string), args["pageSize"].(*int), args["tags"].([]*string)), true
 
 	case "Query.getUserLspIdTags":
 		if e.complexity.Query.GetUserLspIDTags == nil {
@@ -635,6 +654,11 @@ type TagsData {
   lsp_id: String
 }
 
+type PaginatedTagsData {
+  data: [TagsData]
+  prevPageSnapShot: ID
+}
+
 input UserDetails {
   user_id: String
   user_lsp_id: String
@@ -677,7 +701,7 @@ type Query {
   getAll(prevPageSnapShot: String!, pageSize: Int!, is_read: Boolean): PaginatedNotifications
   getAllPaginatedNotifications(pageIndex: Int!, pageSize: Int!, is_read: Boolean): [FirestoreMessage]
   getUserLspIdTags(user_lsp_id: [String]): [TagsData]
-  getTagUsers(tags:[String]): [TagsData]
+  getTagUsers(prevPageSnapShot: String, pageSize: Int, tags:[String]): PaginatedTagsData
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -950,15 +974,33 @@ func (ec *executionContext) field_Query_getAll_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_getTagUsers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 []*string
-	if tmp, ok := rawArgs["tags"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
-		arg0, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+	var arg0 *string
+	if tmp, ok := rawArgs["prevPageSnapShot"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("prevPageSnapShot"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["tags"] = arg0
+	args["prevPageSnapShot"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["pageSize"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageSize"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pageSize"] = arg1
+	var arg2 []*string
+	if tmp, ok := rawArgs["tags"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+		arg2, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tags"] = arg2
 	return args, nil
 }
 
@@ -2705,6 +2747,98 @@ func (ec *executionContext) fieldContext_PaginatedNotifications_nextPageSnapShot
 	return fc, nil
 }
 
+func (ec *executionContext) _PaginatedTagsData_data(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedTagsData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PaginatedTagsData_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TagsData)
+	fc.Result = res
+	return ec.marshalOTagsData2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐTagsData(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PaginatedTagsData_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PaginatedTagsData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "user_lsp_id":
+				return ec.fieldContext_TagsData_user_lsp_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_TagsData_user_id(ctx, field)
+			case "tags":
+				return ec.fieldContext_TagsData_tags(ctx, field)
+			case "lsp_id":
+				return ec.fieldContext_TagsData_lsp_id(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TagsData", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PaginatedTagsData_prevPageSnapShot(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedTagsData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PaginatedTagsData_prevPageSnapShot(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PrevPageSnapShot, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PaginatedTagsData_prevPageSnapShot(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PaginatedTagsData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_getAll(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_getAll(ctx, field)
 	if err != nil {
@@ -2909,7 +3043,7 @@ func (ec *executionContext) _Query_getTagUsers(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetTagUsers(rctx, fc.Args["tags"].([]*string))
+		return ec.resolvers.Query().GetTagUsers(rctx, fc.Args["prevPageSnapShot"].(*string), fc.Args["pageSize"].(*int), fc.Args["tags"].([]*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2918,9 +3052,9 @@ func (ec *executionContext) _Query_getTagUsers(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.TagsData)
+	res := resTmp.(*model.PaginatedTagsData)
 	fc.Result = res
-	return ec.marshalOTagsData2ᚕᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐTagsData(ctx, field.Selections, res)
+	return ec.marshalOPaginatedTagsData2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPaginatedTagsData(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getTagUsers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2931,16 +3065,12 @@ func (ec *executionContext) fieldContext_Query_getTagUsers(ctx context.Context, 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "user_lsp_id":
-				return ec.fieldContext_TagsData_user_lsp_id(ctx, field)
-			case "user_id":
-				return ec.fieldContext_TagsData_user_id(ctx, field)
-			case "tags":
-				return ec.fieldContext_TagsData_tags(ctx, field)
-			case "lsp_id":
-				return ec.fieldContext_TagsData_lsp_id(ctx, field)
+			case "data":
+				return ec.fieldContext_PaginatedTagsData_data(ctx, field)
+			case "prevPageSnapShot":
+				return ec.fieldContext_PaginatedTagsData_prevPageSnapShot(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type TagsData", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type PaginatedTagsData", field.Name)
 		},
 	}
 	defer func() {
@@ -5609,6 +5739,35 @@ func (ec *executionContext) _PaginatedNotifications(ctx context.Context, sel ast
 	return out
 }
 
+var paginatedTagsDataImplementors = []string{"PaginatedTagsData"}
+
+func (ec *executionContext) _PaginatedTagsData(ctx context.Context, sel ast.SelectionSet, obj *model.PaginatedTagsData) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, paginatedTagsDataImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PaginatedTagsData")
+		case "data":
+
+			out.Values[i] = ec._PaginatedTagsData_data(ctx, field, obj)
+
+		case "prevPageSnapShot":
+
+			out.Values[i] = ec._PaginatedTagsData_prevPageSnapShot(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -6605,6 +6764,38 @@ func (ec *executionContext) marshalOFirestoreMessage2ᚖgithubᚗcomᚋzicopsᚋ
 	return ec._FirestoreMessage(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalID(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
+	return res
+}
+
 func (ec *executionContext) marshalONotification2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐNotification(ctx context.Context, sel ast.SelectionSet, v *model.Notification) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -6617,6 +6808,13 @@ func (ec *executionContext) marshalOPaginatedNotifications2ᚖgithubᚗcomᚋzic
 		return graphql.Null
 	}
 	return ec._PaginatedNotifications(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPaginatedTagsData2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPaginatedTagsData(ctx context.Context, sel ast.SelectionSet, v *model.PaginatedTagsData) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PaginatedTagsData(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

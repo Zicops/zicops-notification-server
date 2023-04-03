@@ -8,6 +8,7 @@ import (
 	"sync"
 	"unicode"
 
+	"cloud.google.com/go/firestore"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
 	"google.golang.org/api/iterator"
@@ -119,14 +120,18 @@ func isASCII(s string) bool {
 	return true
 }
 
-func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error) {
+func GetTagUsers(ctx context.Context, prevPageSnapShot *string, pageSize *int, tags []*string) (*model.PaginatedTagsData, error) {
 	claims, err := GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	lspId := claims["lsp_id"].(string)
 	if len(tags) == 0 {
 		return nil, errors.New("please provide tags")
+	}
+	if pageSize == nil {
+		*pageSize = 10
 	}
 	var tmp []string
 	var tagsArray []string
@@ -138,9 +143,18 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error)
 		v = strings.ToLower(v)
 		tagsArray = append(tagsArray, v)
 	}
-	iter := global.Client.Collection("userLspIdTags").Where("Tags", "array-contains-any", tagsArray).Where("LspId", "==", lspId).Documents(ctx)
+
+	var iter *firestore.DocumentIterator
+	//prevPageSnapShot.(firestore.DocumentRef)
+	if prevPageSnapShot != nil {
+		iter = global.Client.Collection("userLspIdTags").Where("Tags", "array-contains-any", tagsArray).Limit(*pageSize).StartAfter(prevPageSnapShot).Where("LspId", "==", lspId).OrderBy("UserId", firestore.Asc).Documents(ctx)
+	} else {
+		iter = global.Client.Collection("userLspIdTags").Where("Tags", "array-contains-any", tagsArray).Limit(*pageSize).Where("LspId", "==", lspId).OrderBy("__name__", firestore.Asc).Documents(ctx)
+	}
+
 	var maps []map[string]interface{}
 
+	var snapShot string
 	for {
 		doc, err := iter.Next()
 		//see if iterator is done
@@ -158,6 +172,8 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error)
 			log.Fatalf("Failed to iterate: %v", err)
 			return nil, err
 		}
+
+		snapShot = doc.Data()["UserId"].(string)
 		tmp = append(tmp, doc.Ref.ID)
 		maps = append(maps, doc.Data())
 	}
@@ -196,5 +212,10 @@ func GetTagUsers(ctx context.Context, tags []*string) ([]*model.TagsData, error)
 
 	}
 	wg.Wait()
-	return res, nil
+
+	resp := model.PaginatedTagsData{
+		Data:             res,
+		PrevPageSnapShot: &snapShot,
+	}
+	return &resp, nil
 }
