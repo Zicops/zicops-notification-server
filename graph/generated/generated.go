@@ -44,14 +44,19 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	ClassRoomFlags struct {
-		AdVideoURL            func(childComplexity int) int
-		ID                    func(childComplexity int) int
-		IsAdDisplayed         func(childComplexity int) int
-		IsBreak               func(childComplexity int) int
-		IsClassroomStarted    func(childComplexity int) int
-		IsModeratorJoined     func(childComplexity int) int
-		IsParticipantsPresent func(childComplexity int) int
-		IsTrainerJoined       func(childComplexity int) int
+		AdVideoURL             func(childComplexity int) int
+		ID                     func(childComplexity int) int
+		IsAdDisplayed          func(childComplexity int) int
+		IsBreak                func(childComplexity int) int
+		IsChatEnabled          func(childComplexity int) int
+		IsClassroomStarted     func(childComplexity int) int
+		IsMicrophoneEnabled    func(childComplexity int) int
+		IsModeratorJoined      func(childComplexity int) int
+		IsParticipantsPresent  func(childComplexity int) int
+		IsQaEnabled            func(childComplexity int) int
+		IsScreenSharingEnabled func(childComplexity int) int
+		IsTrainerJoined        func(childComplexity int) int
+		IsVideoSharingEnabled  func(childComplexity int) int
 	}
 
 	FirestoreData struct {
@@ -180,12 +185,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ClassRoomFlags.IsBreak(childComplexity), true
 
+	case "ClassRoomFlags.is_chat_enabled":
+		if e.complexity.ClassRoomFlags.IsChatEnabled == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsChatEnabled(childComplexity), true
+
 	case "ClassRoomFlags.is_classroom_started":
 		if e.complexity.ClassRoomFlags.IsClassroomStarted == nil {
 			break
 		}
 
 		return e.complexity.ClassRoomFlags.IsClassroomStarted(childComplexity), true
+
+	case "ClassRoomFlags.is_microphone_enabled":
+		if e.complexity.ClassRoomFlags.IsMicrophoneEnabled == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsMicrophoneEnabled(childComplexity), true
 
 	case "ClassRoomFlags.is_moderator_joined":
 		if e.complexity.ClassRoomFlags.IsModeratorJoined == nil {
@@ -201,12 +220,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ClassRoomFlags.IsParticipantsPresent(childComplexity), true
 
+	case "ClassRoomFlags.is_qa_enabled":
+		if e.complexity.ClassRoomFlags.IsQaEnabled == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsQaEnabled(childComplexity), true
+
+	case "ClassRoomFlags.is_screen_sharing_enabled":
+		if e.complexity.ClassRoomFlags.IsScreenSharingEnabled == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsScreenSharingEnabled(childComplexity), true
+
 	case "ClassRoomFlags.is_trainer_joined":
 		if e.complexity.ClassRoomFlags.IsTrainerJoined == nil {
 			break
 		}
 
 		return e.complexity.ClassRoomFlags.IsTrainerJoined(childComplexity), true
+
+	case "ClassRoomFlags.is_video_sharing_enabled":
+		if e.complexity.ClassRoomFlags.IsVideoSharingEnabled == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsVideoSharingEnabled(childComplexity), true
 
 	case "FirestoreData.body":
 		if e.complexity.FirestoreData.Body == nil {
@@ -688,6 +728,11 @@ input ClassRoomFlagsInput {
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
   ad_video_url: String
+  is_microphone_enabled: String
+  is_video_sharing_enabled: String
+  is_screen_sharing_enabled: String
+  is_chat_enabled: String
+  is_qa_enabled: String
 } 
 
 type ClassRoomFlags {
@@ -699,10 +744,14 @@ type ClassRoomFlags {
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
   ad_video_url: String
+  is_microphone_enabled: String
+  is_video_sharing_enabled: String
+  is_screen_sharing_enabled: String
+  is_chat_enabled: String
+  is_qa_enabled: String
 }
 
 input Messages {
-  id: String
   body: String
   meeting_id: String
   user_id: String
@@ -1412,6 +1461,211 @@ func (ec *executionContext) _ClassRoomFlags_ad_video_url(ctx context.Context, fi
 }
 
 func (ec *executionContext) fieldContext_ClassRoomFlags_ad_video_url(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_microphone_enabled(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_microphone_enabled(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsMicrophoneEnabled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_microphone_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_video_sharing_enabled(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_video_sharing_enabled(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsVideoSharingEnabled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_video_sharing_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_screen_sharing_enabled(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_screen_sharing_enabled(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsScreenSharingEnabled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_screen_sharing_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_chat_enabled(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_chat_enabled(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsChatEnabled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_chat_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_qa_enabled(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_qa_enabled(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsQaEnabled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_qa_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ClassRoomFlags",
 		Field:      field,
@@ -2539,6 +2793,16 @@ func (ec *executionContext) fieldContext_Mutation_addClassroomFlags(ctx context.
 				return ec.fieldContext_ClassRoomFlags_is_trainer_joined(ctx, field)
 			case "ad_video_url":
 				return ec.fieldContext_ClassRoomFlags_ad_video_url(ctx, field)
+			case "is_microphone_enabled":
+				return ec.fieldContext_ClassRoomFlags_is_microphone_enabled(ctx, field)
+			case "is_video_sharing_enabled":
+				return ec.fieldContext_ClassRoomFlags_is_video_sharing_enabled(ctx, field)
+			case "is_screen_sharing_enabled":
+				return ec.fieldContext_ClassRoomFlags_is_screen_sharing_enabled(ctx, field)
+			case "is_chat_enabled":
+				return ec.fieldContext_ClassRoomFlags_is_chat_enabled(ctx, field)
+			case "is_qa_enabled":
+				return ec.fieldContext_ClassRoomFlags_is_qa_enabled(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ClassRoomFlags", field.Name)
 		},
@@ -5251,7 +5515,7 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "is_classroom_started", "is_participants_present", "is__ad_displayed", "is_break", "is_moderator_joined", "is_trainer_joined", "ad_video_url"}
+	fieldsInOrder := [...]string{"id", "is_classroom_started", "is_participants_present", "is__ad_displayed", "is_break", "is_moderator_joined", "is_trainer_joined", "ad_video_url", "is_microphone_enabled", "is_video_sharing_enabled", "is_screen_sharing_enabled", "is_chat_enabled", "is_qa_enabled"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5322,6 +5586,46 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
+		case "is_microphone_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_microphone_enabled"))
+			it.IsMicrophoneEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_video_sharing_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_video_sharing_enabled"))
+			it.IsVideoSharingEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_screen_sharing_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_screen_sharing_enabled"))
+			it.IsScreenSharingEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_chat_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_chat_enabled"))
+			it.IsChatEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_qa_enabled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_qa_enabled"))
+			it.IsQaEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -5387,21 +5691,13 @@ func (ec *executionContext) unmarshalInputMessages(ctx context.Context, obj inte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "body", "meeting_id", "user_id", "time"}
+	fieldsInOrder := [...]string{"body", "meeting_id", "user_id", "time"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "body":
 			var err error
 
@@ -5569,6 +5865,26 @@ func (ec *executionContext) _ClassRoomFlags(ctx context.Context, sel ast.Selecti
 		case "ad_video_url":
 
 			out.Values[i] = ec._ClassRoomFlags_ad_video_url(ctx, field, obj)
+
+		case "is_microphone_enabled":
+
+			out.Values[i] = ec._ClassRoomFlags_is_microphone_enabled(ctx, field, obj)
+
+		case "is_video_sharing_enabled":
+
+			out.Values[i] = ec._ClassRoomFlags_is_video_sharing_enabled(ctx, field, obj)
+
+		case "is_screen_sharing_enabled":
+
+			out.Values[i] = ec._ClassRoomFlags_is_screen_sharing_enabled(ctx, field, obj)
+
+		case "is_chat_enabled":
+
+			out.Values[i] = ec._ClassRoomFlags_is_chat_enabled(ctx, field, obj)
+
+		case "is_qa_enabled":
+
+			out.Values[i] = ec._ClassRoomFlags_is_qa_enabled(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
