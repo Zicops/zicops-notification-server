@@ -53,6 +53,14 @@ type FirestoreMessage struct {
 	LspID     string `json:"lsp_id"`
 }
 
+type Messages struct {
+	ID        *string `json:"id"`
+	Body      *string `json:"body"`
+	MeetingID *string `json:"meeting_id"`
+	UserID    *string `json:"user_id"`
+	Time      *int    `json:"time"`
+}
+
 type Notification struct {
 	Statuscode string  `json:"statuscode"`
 	Error      *string `json:"error"`

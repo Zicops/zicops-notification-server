@@ -94,6 +94,16 @@ func (r *mutationResolver) AddClassroomFlags(ctx context.Context, input *model.C
 	return resp, nil
 }
 
+// AddMessagesMeet is the resolver for the addMessagesMeet field.
+func (r *mutationResolver) AddMessagesMeet(ctx context.Context, message *model.Messages) (*bool, error) {
+	resp, err := handlers.AddMessagesMeet(ctx, message)
+	if err != nil {
+		log.Printf("Got error while sending messages: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // GetAll is the resolver for the getAll field.
 func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
 	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize, isRead)

@@ -83,6 +83,13 @@ type ClassRoomFlags {
   ad_video_url: String
 }
 
+input Messages {
+  body: String
+  meeting_id: String
+  user_id: String
+  time: Int
+}
+
 type Mutation {
   sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
@@ -92,6 +99,7 @@ type Mutation {
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   addUserTags(ids: [UserDetails], tags:[String]): Boolean
   addClassroomFlags(input: ClassRoomFlagsInput): ClassRoomFlags
+  addMessagesMeet(message: Messages): Boolean
 }
 
 type Query {

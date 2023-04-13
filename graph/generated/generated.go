@@ -78,6 +78,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AddClassroomFlags        func(childComplexity int, input *model.ClassRoomFlagsInput) int
+		AddMessagesMeet          func(childComplexity int, message *model.Messages) int
 		AddToFirestore           func(childComplexity int, message []*model.FirestoreDataInput) int
 		AddUserTags              func(childComplexity int, ids []*model.UserDetails, tags []*string) int
 		AuthTokens               func(childComplexity int) int
@@ -127,6 +128,7 @@ type MutationResolver interface {
 	SendEmailUserID(ctx context.Context, userID []*string, senderName string, userName []*string, body string, templateID string) ([]string, error)
 	AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) (*bool, error)
 	AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*model.ClassRoomFlags, error)
+	AddMessagesMeet(ctx context.Context, message *model.Messages) (*bool, error)
 }
 type QueryResolver interface {
 	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
@@ -329,6 +331,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AddClassroomFlags(childComplexity, args["input"].(*model.ClassRoomFlagsInput)), true
+
+	case "Mutation.addMessagesMeet":
+		if e.complexity.Mutation.AddMessagesMeet == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addMessagesMeet_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddMessagesMeet(childComplexity, args["message"].(*model.Messages)), true
 
 	case "Mutation.addToFirestore":
 		if e.complexity.Mutation.AddToFirestore == nil {
@@ -539,6 +553,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputClassRoomFlagsInput,
 		ec.unmarshalInputFirestoreDataInput,
+		ec.unmarshalInputMessages,
 		ec.unmarshalInputNotificationInput,
 		ec.unmarshalInputUserDetails,
 	)
@@ -686,6 +701,14 @@ type ClassRoomFlags {
   ad_video_url: String
 }
 
+input Messages {
+  id: String
+  body: String
+  meeting_id: String
+  user_id: String
+  time: Int
+}
+
 type Mutation {
   sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
@@ -695,6 +718,7 @@ type Mutation {
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   addUserTags(ids: [UserDetails], tags:[String]): Boolean
   addClassroomFlags(input: ClassRoomFlagsInput): ClassRoomFlags
+  addMessagesMeet(message: Messages): Boolean
 }
 
 type Query {
@@ -722,6 +746,21 @@ func (ec *executionContext) field_Mutation_addClassroomFlags_args(ctx context.Co
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_addMessagesMeet_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.Messages
+	if tmp, ok := rawArgs["message"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("message"))
+		arg0, err = ec.unmarshalOMessages2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐMessages(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["message"] = arg0
 	return args, nil
 }
 
@@ -2512,6 +2551,58 @@ func (ec *executionContext) fieldContext_Mutation_addClassroomFlags(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addClassroomFlags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addMessagesMeet(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addMessagesMeet(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddMessagesMeet(rctx, fc.Args["message"].(*model.Messages))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addMessagesMeet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addMessagesMeet_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -5289,6 +5380,66 @@ func (ec *executionContext) unmarshalInputFirestoreDataInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMessages(ctx context.Context, obj interface{}) (model.Messages, error) {
+	var it model.Messages
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "body", "meeting_id", "user_id", "time"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "body":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
+			it.Body, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "meeting_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("meeting_id"))
+			it.MeetingID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			it.UserID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "time":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("time"))
+			it.Time, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNotificationInput(ctx context.Context, obj interface{}) (model.NotificationInput, error) {
 	var it model.NotificationInput
 	asMap := map[string]interface{}{}
@@ -5658,6 +5809,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addClassroomFlags(ctx, field)
+			})
+
+		case "addMessagesMeet":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addMessagesMeet(ctx, field)
 			})
 
 		default:
@@ -6794,6 +6951,14 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOMessages2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐMessages(ctx context.Context, v interface{}) (*model.Messages, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMessages(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalONotification2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐNotification(ctx context.Context, sel ast.SelectionSet, v *model.Notification) graphql.Marshaler {
