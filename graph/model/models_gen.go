@@ -11,11 +11,11 @@ type ClassRoomFlags struct {
 	IsModeratorJoined      *bool   `json:"is_moderator_joined"`
 	IsTrainerJoined        *bool   `json:"is_trainer_joined"`
 	AdVideoURL             *string `json:"ad_video_url"`
-	IsMicrophoneEnabled    *string `json:"is_microphone_enabled"`
-	IsVideoSharingEnabled  *string `json:"is_video_sharing_enabled"`
-	IsScreenSharingEnabled *string `json:"is_screen_sharing_enabled"`
-	IsChatEnabled          *string `json:"is_chat_enabled"`
-	IsQaEnabled            *string `json:"is_qa_enabled"`
+	IsMicrophoneEnabled    *bool   `json:"is_microphone_enabled"`
+	IsVideoSharingEnabled  *bool   `json:"is_video_sharing_enabled"`
+	IsScreenSharingEnabled *bool   `json:"is_screen_sharing_enabled"`
+	IsChatEnabled          *bool   `json:"is_chat_enabled"`
+	IsQaEnabled            *bool   `json:"is_qa_enabled"`
 }
 
 type ClassRoomFlagsInput struct {
@@ -27,11 +27,11 @@ type ClassRoomFlagsInput struct {
 	IsModeratorJoined      *bool   `json:"is_moderator_joined"`
 	IsTrainerJoined        *bool   `json:"is_trainer_joined"`
 	AdVideoURL             *string `json:"ad_video_url"`
-	IsMicrophoneEnabled    *string `json:"is_microphone_enabled"`
-	IsVideoSharingEnabled  *string `json:"is_video_sharing_enabled"`
-	IsScreenSharingEnabled *string `json:"is_screen_sharing_enabled"`
-	IsChatEnabled          *string `json:"is_chat_enabled"`
-	IsQaEnabled            *string `json:"is_qa_enabled"`
+	IsMicrophoneEnabled    *bool   `json:"is_microphone_enabled"`
+	IsVideoSharingEnabled  *bool   `json:"is_video_sharing_enabled"`
+	IsScreenSharingEnabled *bool   `json:"is_screen_sharing_enabled"`
+	IsChatEnabled          *bool   `json:"is_chat_enabled"`
+	IsQaEnabled            *bool   `json:"is_qa_enabled"`
 }
 
 type FirestoreData struct {

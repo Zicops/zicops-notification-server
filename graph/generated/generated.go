@@ -728,11 +728,11 @@ input ClassRoomFlagsInput {
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
   ad_video_url: String
-  is_microphone_enabled: String
-  is_video_sharing_enabled: String
-  is_screen_sharing_enabled: String
-  is_chat_enabled: String
-  is_qa_enabled: String
+  is_microphone_enabled: Boolean
+  is_video_sharing_enabled: Boolean
+  is_screen_sharing_enabled: Boolean
+  is_chat_enabled: Boolean
+  is_qa_enabled: Boolean
 } 
 
 type ClassRoomFlags {
@@ -744,11 +744,11 @@ type ClassRoomFlags {
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
   ad_video_url: String
-  is_microphone_enabled: String
-  is_video_sharing_enabled: String
-  is_screen_sharing_enabled: String
-  is_chat_enabled: String
-  is_qa_enabled: String
+  is_microphone_enabled: Boolean
+  is_video_sharing_enabled: Boolean
+  is_screen_sharing_enabled: Boolean
+  is_chat_enabled: Boolean
+  is_qa_enabled: Boolean
 }
 
 input Messages {
@@ -1496,9 +1496,9 @@ func (ec *executionContext) _ClassRoomFlags_is_microphone_enabled(ctx context.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ClassRoomFlags_is_microphone_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1508,7 +1508,7 @@ func (ec *executionContext) fieldContext_ClassRoomFlags_is_microphone_enabled(ct
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1537,9 +1537,9 @@ func (ec *executionContext) _ClassRoomFlags_is_video_sharing_enabled(ctx context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ClassRoomFlags_is_video_sharing_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1549,7 +1549,7 @@ func (ec *executionContext) fieldContext_ClassRoomFlags_is_video_sharing_enabled
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1578,9 +1578,9 @@ func (ec *executionContext) _ClassRoomFlags_is_screen_sharing_enabled(ctx contex
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ClassRoomFlags_is_screen_sharing_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1590,7 +1590,7 @@ func (ec *executionContext) fieldContext_ClassRoomFlags_is_screen_sharing_enable
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1619,9 +1619,9 @@ func (ec *executionContext) _ClassRoomFlags_is_chat_enabled(ctx context.Context,
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ClassRoomFlags_is_chat_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1631,7 +1631,7 @@ func (ec *executionContext) fieldContext_ClassRoomFlags_is_chat_enabled(ctx cont
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1660,9 +1660,9 @@ func (ec *executionContext) _ClassRoomFlags_is_qa_enabled(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ClassRoomFlags_is_qa_enabled(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1672,7 +1672,7 @@ func (ec *executionContext) fieldContext_ClassRoomFlags_is_qa_enabled(ctx contex
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5590,7 +5590,7 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_microphone_enabled"))
-			it.IsMicrophoneEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.IsMicrophoneEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5598,7 +5598,7 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_video_sharing_enabled"))
-			it.IsVideoSharingEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.IsVideoSharingEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5606,7 +5606,7 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_screen_sharing_enabled"))
-			it.IsScreenSharingEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.IsScreenSharingEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5614,7 +5614,7 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_chat_enabled"))
-			it.IsChatEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.IsChatEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5622,7 +5622,7 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_qa_enabled"))
-			it.IsQaEnabled, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.IsQaEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
