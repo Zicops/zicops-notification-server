@@ -3,25 +3,35 @@
 package model
 
 type ClassRoomFlags struct {
-	ID                    *string `json:"id"`
-	IsClassroomStarted    *bool   `json:"is_classroom_started"`
-	IsParticipantsPresent *bool   `json:"is_participants_present"`
-	IsAdDisplayed         *bool   `json:"is__ad_displayed"`
-	IsBreak               *bool   `json:"is_break"`
-	IsModeratorJoined     *bool   `json:"is_moderator_joined"`
-	IsTrainerJoined       *bool   `json:"is_trainer_joined"`
-	AdVideoURL            *string `json:"ad_video_url"`
+	ID                     *string `json:"id"`
+	IsClassroomStarted     *bool   `json:"is_classroom_started"`
+	IsParticipantsPresent  *bool   `json:"is_participants_present"`
+	IsAdDisplayed          *bool   `json:"is__ad_displayed"`
+	IsBreak                *bool   `json:"is_break"`
+	IsModeratorJoined      *bool   `json:"is_moderator_joined"`
+	IsTrainerJoined        *bool   `json:"is_trainer_joined"`
+	AdVideoURL             *string `json:"ad_video_url"`
+	IsMicrophoneEnabled    *bool   `json:"is_microphone_enabled"`
+	IsVideoSharingEnabled  *bool   `json:"is_video_sharing_enabled"`
+	IsScreenSharingEnabled *bool   `json:"is_screen_sharing_enabled"`
+	IsChatEnabled          *bool   `json:"is_chat_enabled"`
+	IsQaEnabled            *bool   `json:"is_qa_enabled"`
 }
 
 type ClassRoomFlagsInput struct {
-	ID                    *string `json:"id"`
-	IsClassroomStarted    *bool   `json:"is_classroom_started"`
-	IsParticipantsPresent *bool   `json:"is_participants_present"`
-	IsAdDisplayed         *bool   `json:"is__ad_displayed"`
-	IsBreak               *bool   `json:"is_break"`
-	IsModeratorJoined     *bool   `json:"is_moderator_joined"`
-	IsTrainerJoined       *bool   `json:"is_trainer_joined"`
-	AdVideoURL            *string `json:"ad_video_url"`
+	ID                     *string `json:"id"`
+	IsClassroomStarted     *bool   `json:"is_classroom_started"`
+	IsParticipantsPresent  *bool   `json:"is_participants_present"`
+	IsAdDisplayed          *bool   `json:"is__ad_displayed"`
+	IsBreak                *bool   `json:"is_break"`
+	IsModeratorJoined      *bool   `json:"is_moderator_joined"`
+	IsTrainerJoined        *bool   `json:"is_trainer_joined"`
+	AdVideoURL             *string `json:"ad_video_url"`
+	IsMicrophoneEnabled    *bool   `json:"is_microphone_enabled"`
+	IsVideoSharingEnabled  *bool   `json:"is_video_sharing_enabled"`
+	IsScreenSharingEnabled *bool   `json:"is_screen_sharing_enabled"`
+	IsChatEnabled          *bool   `json:"is_chat_enabled"`
+	IsQaEnabled            *bool   `json:"is_qa_enabled"`
 }
 
 type FirestoreData struct {
@@ -51,6 +61,13 @@ type FirestoreMessage struct {
 	IsRead    bool   `json:"is_read"`
 	Link      string `json:"link"`
 	LspID     string `json:"lsp_id"`
+}
+
+type Messages struct {
+	Body      *string `json:"body"`
+	MeetingID *string `json:"meeting_id"`
+	UserID    *string `json:"user_id"`
+	Time      *int    `json:"time"`
 }
 
 type Notification struct {

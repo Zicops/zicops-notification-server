@@ -70,6 +70,11 @@ input ClassRoomFlagsInput {
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
   ad_video_url: String
+  is_microphone_enabled: Boolean
+  is_video_sharing_enabled: Boolean
+  is_screen_sharing_enabled: Boolean
+  is_chat_enabled: Boolean
+  is_qa_enabled: Boolean
 } 
 
 type ClassRoomFlags {
@@ -81,6 +86,18 @@ type ClassRoomFlags {
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
   ad_video_url: String
+  is_microphone_enabled: Boolean
+  is_video_sharing_enabled: Boolean
+  is_screen_sharing_enabled: Boolean
+  is_chat_enabled: Boolean
+  is_qa_enabled: Boolean
+}
+
+input Messages {
+  body: String
+  meeting_id: String
+  user_id: String
+  time: Int
 }
 
 type Mutation {
@@ -92,6 +109,7 @@ type Mutation {
   sendEmail_UserId(user_id: [String]!, sender_name:String!, user_name:[String], body: String!, template_id: String!): [String!]
   addUserTags(ids: [UserDetails], tags:[String]): Boolean
   addClassroomFlags(input: ClassRoomFlagsInput): ClassRoomFlags
+  addMessagesMeet(message: Messages): Boolean
 }
 
 type Query {
