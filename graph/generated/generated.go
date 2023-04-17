@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 		IsScreenSharingEnabled func(childComplexity int) int
 		IsTrainerJoined        func(childComplexity int) int
 		IsVideoSharingEnabled  func(childComplexity int) int
+		Quiz                   func(childComplexity int) int
 	}
 
 	FirestoreData struct {
@@ -271,6 +272,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ClassRoomFlags.IsVideoSharingEnabled(childComplexity), true
+
+	case "ClassRoomFlags.quiz":
+		if e.complexity.ClassRoomFlags.Quiz == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.Quiz(childComplexity), true
 
 	case "FirestoreData.body":
 		if e.complexity.FirestoreData.Body == nil {
@@ -896,6 +904,7 @@ type ClassRoomFlags {
   is_screen_sharing_enabled: Boolean
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
+  quiz:[String]
 }
 
 input Messages {
@@ -913,6 +922,7 @@ input PollsInput{
   topic_id: String
   question: String
   options: [String]
+  poll_ids: [String]
   status: String
 }
 
@@ -923,7 +933,7 @@ type Polls{
   topic_id: String
   question: String
   options: [String]
-  poll_ids: String
+  poll_ids: [String]
   status: String
 }
 
@@ -931,14 +941,14 @@ input PollResponseInput {
   id: String
   poll_id: String
   response: String
-  user_ids: [String]
+  user_ids: String
 }
 
 type PollResponse {
   id: String
   poll_id: String
   response: String
-  user_ids: [String]
+  user_ids: String
 }
 
 type Mutation {
@@ -1904,6 +1914,47 @@ func (ec *executionContext) fieldContext_ClassRoomFlags_is_qa_enabled(ctx contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_quiz(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_quiz(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Quiz, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_quiz(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3034,6 +3085,8 @@ func (ec *executionContext) fieldContext_Mutation_addClassroomFlags(ctx context.
 				return ec.fieldContext_ClassRoomFlags_is_chat_enabled(ctx, field)
 			case "is_qa_enabled":
 				return ec.fieldContext_ClassRoomFlags_is_qa_enabled(ctx, field)
+			case "quiz":
+				return ec.fieldContext_ClassRoomFlags_quiz(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ClassRoomFlags", field.Name)
 		},
@@ -3773,9 +3826,9 @@ func (ec *executionContext) _PollResponse_user_ids(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PollResponse_user_ids(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4060,9 +4113,9 @@ func (ec *executionContext) _Polls_poll_ids(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.([]*string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Polls_poll_ids(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6763,7 +6816,7 @@ func (ec *executionContext) unmarshalInputPollResponseInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_ids"))
-			it.UserIds, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			it.UserIds, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6780,7 +6833,7 @@ func (ec *executionContext) unmarshalInputPollsInput(ctx context.Context, obj in
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "meeting_id", "course_id", "topic_id", "question", "options", "status"}
+	fieldsInOrder := [...]string{"id", "meeting_id", "course_id", "topic_id", "question", "options", "poll_ids", "status"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6832,6 +6885,14 @@ func (ec *executionContext) unmarshalInputPollsInput(ctx context.Context, obj in
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("options"))
 			it.Options, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "poll_ids":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("poll_ids"))
+			it.PollIds, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6954,6 +7015,10 @@ func (ec *executionContext) _ClassRoomFlags(ctx context.Context, sel ast.Selecti
 		case "is_qa_enabled":
 
 			out.Values[i] = ec._ClassRoomFlags_is_qa_enabled(ctx, field, obj)
+
+		case "quiz":
+
+			out.Values[i] = ec._ClassRoomFlags_quiz(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

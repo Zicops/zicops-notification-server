@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/zicops/zicops-notification-server/global"
@@ -9,6 +10,9 @@ import (
 )
 
 func AddMessagesMeet(ctx context.Context, message *model.Messages) (*bool, error) {
+	if message.Body == nil || message.ChatType == nil || message.MeetingID == nil || message.UserID == nil {
+		return nil, fmt.Errorf("please mention all the parameters")
+	}
 	_, err := GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err

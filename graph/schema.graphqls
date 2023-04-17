@@ -92,6 +92,7 @@ type ClassRoomFlags {
   is_screen_sharing_enabled: Boolean
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
+  quiz:[String]
 }
 
 input Messages {
@@ -109,6 +110,7 @@ input PollsInput{
   topic_id: String
   question: String
   options: [String]
+  poll_ids: [String]
   status: String
 }
 
@@ -119,7 +121,7 @@ type Polls{
   topic_id: String
   question: String
   options: [String]
-  poll_ids: String
+  poll_ids: [String]
   status: String
 }
 
@@ -127,14 +129,14 @@ input PollResponseInput {
   id: String
   poll_id: String
   response: String
-  user_ids: [String]
+  user_ids: String
 }
 
 type PollResponse {
   id: String
   poll_id: String
   response: String
-  user_ids: [String]
+  user_ids: String
 }
 
 type Mutation {
