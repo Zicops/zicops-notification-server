@@ -3,11 +3,13 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"cloud.google.com/go/firestore"
 	"github.com/google/uuid"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
+	"google.golang.org/api/iterator"
 )
 
 func AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error) {
@@ -50,6 +52,11 @@ func AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
 	if err != nil {
 		return nil, err
 	}
+	var tmp []*string
+	for _, vv := range pollIds {
+		v := vv
+		tmp = append(tmp, &v)
+	}
 	res := model.Polls{
 		ID:        &id,
 		MeetingID: input.MeetingID,
@@ -57,6 +64,7 @@ func AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
 		TopicID:   input.TopicID,
 		Question:  input.Question,
 		Options:   input.Options,
+		PollIds:   tmp,
 		Status:    input.Status,
 	}
 	return &res, nil
@@ -136,3 +144,64 @@ ye db me rakho
 main tumko single quizId aur type: "publish" bhejunga tum usko publish me append karo
 aur agar type: "end" bhejunga tho ended me append karo aur publish me se remove karo
 */
+
+func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*model.PollResponse, error) {
+	_, err := GetClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if input.Response != nil {
+		_, err = global.Client.Collection("polls").Doc(*input.ID).Update(ctx, []firestore.Update{
+			{
+				Path:  "response",
+				Value: *input.Response,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+	} else if input.UserIds != nil {
+		iter := global.Client.Collection("poll_response").Where("user_ids", "array-contains", *input.UserIds).Documents(ctx)
+		for {
+			doc, err := iter.Next()
+			//see if iterator is done
+			if err == iterator.Done {
+				break
+			}
+
+			//see if the error is no more items in iterator
+			if err != nil && err.Error() == "no more items in iterator" {
+				break
+			}
+
+			if err != nil {
+				log.Fatalf("Failed to iterate: %v", err)
+				return nil, err
+			}
+			id := doc.Ref.ID
+			_, err = global.Client.Collection("poll_response").Doc(id).Delete(ctx)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		_, err = global.Client.Collection("polls_response").Doc(*input.ID).Update(ctx, []firestore.Update{
+			{
+				Path:  "user_ids",
+				Value: firestore.ArrayUnion(*input.UserIds),
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	res := model.PollResponse{
+		ID:       input.ID,
+		PollID:   input.PollID,
+		Response: input.Response,
+		UserIds:  input.UserIds,
+	}
+	return &res, nil
+}

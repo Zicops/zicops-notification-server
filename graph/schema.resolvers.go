@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/zicops/zicops-notification-server/graph/generated"
@@ -127,7 +126,12 @@ func (r *mutationResolver) UpdatePoll(ctx context.Context, input *model.PollsInp
 
 // UpdatePollOptions is the resolver for the updatePollOptions field.
 func (r *mutationResolver) UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*model.PollResponse, error) {
-	panic(fmt.Errorf("not implemented: UpdatePollOptions - updatePollOptions"))
+	resp, err := handlers.UpdatePollOptions(ctx, input)
+	if err != nil {
+		log.Printf("Got error while updating poll options: %v", err)
+		return nil, err
+	}
+	return resp, nil
 }
 
 // GetAll is the resolver for the getAll field.
