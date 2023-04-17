@@ -75,13 +75,14 @@ input ClassRoomFlagsInput {
   is_screen_sharing_enabled: Boolean
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
+  quiz: [String]
 } 
 
 type ClassRoomFlags {
   id: String
   is_classroom_started: Boolean
   is_participants_present: Boolean
-  is__ad_displayed: Boolean
+  is_ad_displayed: Boolean
   is_break: Boolean
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
@@ -98,6 +99,42 @@ input Messages {
   meeting_id: String
   user_id: String
   time: Int
+  chat_type: String
+}
+
+input PollsInput{
+  id: String
+  meeting_id: String
+  course_id: String
+  topic_id: String
+  question: String
+  options: [String]
+  status: String
+}
+
+type Polls{
+  id: String
+  meeting_id: String
+  course_id: String
+  topic_id: String
+  question: String
+  options: [String]
+  poll_ids: String
+  status: String
+}
+
+input PollResponseInput {
+  id: String
+  poll_id: String
+  response: String
+  user_ids: [String]
+}
+
+type PollResponse {
+  id: String
+  poll_id: String
+  response: String
+  user_ids: [String]
 }
 
 type Mutation {
@@ -110,6 +147,9 @@ type Mutation {
   addUserTags(ids: [UserDetails], tags:[String]): Boolean
   addClassroomFlags(input: ClassRoomFlagsInput): ClassRoomFlags
   addMessagesMeet(message: Messages): Boolean
+  addPoll(input: PollsInput): Polls
+  updatePoll(input: PollsInput): Polls
+  updatePollOptions(input: PollResponseInput): PollResponse
 }
 
 type Query {

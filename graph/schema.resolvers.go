@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/zicops/zicops-notification-server/graph/generated"
@@ -104,44 +105,44 @@ func (r *mutationResolver) AddMessagesMeet(ctx context.Context, message *model.M
 	return resp, nil
 }
 
-// GetAll is the resolver for the getAll field.
-func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
-	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize, isRead)
+// AddPoll is the resolver for the addPoll field.
+func (r *mutationResolver) AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error) {
+	resp, err := handlers.AddPoll(ctx, input)
 	if err != nil {
-		log.Println("Error receiving notification list")
+		log.Printf("Got error while adding polls: %v", err)
 		return nil, err
 	}
 	return resp, nil
+}
+
+// UpdatePoll is the resolver for the updatePoll field.
+func (r *mutationResolver) UpdatePoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error) {
+	panic(fmt.Errorf("not implemented: UpdatePoll - updatePoll"))
+}
+
+// UpdatePollOptions is the resolver for the updatePollOptions field.
+func (r *mutationResolver) UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*model.PollResponse, error) {
+	panic(fmt.Errorf("not implemented: UpdatePollOptions - updatePollOptions"))
+}
+
+// GetAll is the resolver for the getAll field.
+func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
+	panic(fmt.Errorf("not implemented: GetAll - getAll"))
 }
 
 // GetAllPaginatedNotifications is the resolver for the getAllPaginatedNotifications field.
 func (r *queryResolver) GetAllPaginatedNotifications(ctx context.Context, pageIndex int, pageSize int, isRead *bool) ([]*model.FirestoreMessage, error) {
-	resp, err := handlers.GetAllPaginatedNotifications(ctx, pageIndex, pageSize, isRead)
-	if err != nil {
-		log.Println("Error receiving notification list")
-		return nil, err
-	}
-	return resp, nil
+	panic(fmt.Errorf("not implemented: GetAllPaginatedNotifications - getAllPaginatedNotifications"))
 }
 
 // GetUserLspIDTags is the resolver for the getUserLspIdTags field.
 func (r *queryResolver) GetUserLspIDTags(ctx context.Context, userLspID []*string) ([]*model.TagsData, error) {
-	resp, err := handlers.GetUserLspIDTags(ctx, userLspID)
-	if err != nil {
-		log.Printf("Error receiving user tags: %v", err)
-		return nil, err
-	}
-	return resp, nil
+	panic(fmt.Errorf("not implemented: GetUserLspIDTags - getUserLspIdTags"))
 }
 
 // GetTagUsers is the resolver for the getTagUsers field.
 func (r *queryResolver) GetTagUsers(ctx context.Context, prevPageSnapShot *string, pageSize *int, tags []*string) (*model.PaginatedTagsData, error) {
-	resp, err := handlers.GetTagUsers(ctx, prevPageSnapShot, pageSize, tags)
-	if err != nil {
-		log.Printf("Error receiving user tags: %v", err)
-		return nil, err
-	}
-	return resp, nil
+	panic(fmt.Errorf("not implemented: GetTagUsers - getTagUsers"))
 }
 
 // Mutation returns generated.MutationResolver implementation.
