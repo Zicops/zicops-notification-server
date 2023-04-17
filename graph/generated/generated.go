@@ -84,6 +84,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AddClassroomFlags        func(childComplexity int, input *model.ClassRoomFlagsInput) int
 		AddMessagesMeet          func(childComplexity int, message *model.Messages) int
+		AddPoll                  func(childComplexity int, input *model.PollsInput) int
 		AddToFirestore           func(childComplexity int, message []*model.FirestoreDataInput) int
 		AddUserTags              func(childComplexity int, ids []*model.UserDetails, tags []*string) int
 		AuthTokens               func(childComplexity int) int
@@ -91,6 +92,8 @@ type ComplexityRoot struct {
 		SendEmail                func(childComplexity int, to []*string, senderName string, userName []*string, body string, templateID string) int
 		SendEmailUserID          func(childComplexity int, userID []*string, senderName string, userName []*string, body string, templateID string) int
 		SendNotificationWithLink func(childComplexity int, notification model.NotificationInput, link string) int
+		UpdatePoll               func(childComplexity int, input *model.PollsInput) int
+		UpdatePollOptions        func(childComplexity int, input *model.PollResponseInput) int
 	}
 
 	Notification struct {
@@ -107,6 +110,24 @@ type ComplexityRoot struct {
 	PaginatedTagsData struct {
 		Data             func(childComplexity int) int
 		PrevPageSnapShot func(childComplexity int) int
+	}
+
+	PollResponse struct {
+		ID       func(childComplexity int) int
+		PollID   func(childComplexity int) int
+		Response func(childComplexity int) int
+		UserIds  func(childComplexity int) int
+	}
+
+	Polls struct {
+		CourseID  func(childComplexity int) int
+		ID        func(childComplexity int) int
+		MeetingID func(childComplexity int) int
+		Options   func(childComplexity int) int
+		PollIds   func(childComplexity int) int
+		Question  func(childComplexity int) int
+		Status    func(childComplexity int) int
+		TopicID   func(childComplexity int) int
 	}
 
 	Query struct {
@@ -134,6 +155,9 @@ type MutationResolver interface {
 	AddUserTags(ctx context.Context, ids []*model.UserDetails, tags []*string) (*bool, error)
 	AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*model.ClassRoomFlags, error)
 	AddMessagesMeet(ctx context.Context, message *model.Messages) (*bool, error)
+	AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
+	UpdatePoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
+	UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*model.PollResponse, error)
 }
 type QueryResolver interface {
 	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
@@ -171,7 +195,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ClassRoomFlags.ID(childComplexity), true
 
-	case "ClassRoomFlags.is__ad_displayed":
+	case "ClassRoomFlags.is_ad_displayed":
 		if e.complexity.ClassRoomFlags.IsAdDisplayed == nil {
 			break
 		}
@@ -384,6 +408,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.AddMessagesMeet(childComplexity, args["message"].(*model.Messages)), true
 
+	case "Mutation.addPoll":
+		if e.complexity.Mutation.AddPoll == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addPoll_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddPoll(childComplexity, args["input"].(*model.PollsInput)), true
+
 	case "Mutation.addToFirestore":
 		if e.complexity.Mutation.AddToFirestore == nil {
 			break
@@ -458,6 +494,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SendNotificationWithLink(childComplexity, args["notification"].(model.NotificationInput), args["link"].(string)), true
 
+	case "Mutation.updatePoll":
+		if e.complexity.Mutation.UpdatePoll == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePoll_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdatePoll(childComplexity, args["input"].(*model.PollsInput)), true
+
+	case "Mutation.updatePollOptions":
+		if e.complexity.Mutation.UpdatePollOptions == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePollOptions_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdatePollOptions(childComplexity, args["input"].(*model.PollResponseInput)), true
+
 	case "Notification.error":
 		if e.complexity.Notification.Error == nil {
 			break
@@ -506,6 +566,90 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PaginatedTagsData.PrevPageSnapShot(childComplexity), true
+
+	case "PollResponse.id":
+		if e.complexity.PollResponse.ID == nil {
+			break
+		}
+
+		return e.complexity.PollResponse.ID(childComplexity), true
+
+	case "PollResponse.poll_id":
+		if e.complexity.PollResponse.PollID == nil {
+			break
+		}
+
+		return e.complexity.PollResponse.PollID(childComplexity), true
+
+	case "PollResponse.response":
+		if e.complexity.PollResponse.Response == nil {
+			break
+		}
+
+		return e.complexity.PollResponse.Response(childComplexity), true
+
+	case "PollResponse.user_ids":
+		if e.complexity.PollResponse.UserIds == nil {
+			break
+		}
+
+		return e.complexity.PollResponse.UserIds(childComplexity), true
+
+	case "Polls.course_id":
+		if e.complexity.Polls.CourseID == nil {
+			break
+		}
+
+		return e.complexity.Polls.CourseID(childComplexity), true
+
+	case "Polls.id":
+		if e.complexity.Polls.ID == nil {
+			break
+		}
+
+		return e.complexity.Polls.ID(childComplexity), true
+
+	case "Polls.meeting_id":
+		if e.complexity.Polls.MeetingID == nil {
+			break
+		}
+
+		return e.complexity.Polls.MeetingID(childComplexity), true
+
+	case "Polls.options":
+		if e.complexity.Polls.Options == nil {
+			break
+		}
+
+		return e.complexity.Polls.Options(childComplexity), true
+
+	case "Polls.poll_ids":
+		if e.complexity.Polls.PollIds == nil {
+			break
+		}
+
+		return e.complexity.Polls.PollIds(childComplexity), true
+
+	case "Polls.question":
+		if e.complexity.Polls.Question == nil {
+			break
+		}
+
+		return e.complexity.Polls.Question(childComplexity), true
+
+	case "Polls.status":
+		if e.complexity.Polls.Status == nil {
+			break
+		}
+
+		return e.complexity.Polls.Status(childComplexity), true
+
+	case "Polls.topic_id":
+		if e.complexity.Polls.TopicID == nil {
+			break
+		}
+
+		return e.complexity.Polls.TopicID(childComplexity), true
 
 	case "Query.getAll":
 		if e.complexity.Query.GetAll == nil {
@@ -595,6 +739,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputFirestoreDataInput,
 		ec.unmarshalInputMessages,
 		ec.unmarshalInputNotificationInput,
+		ec.unmarshalInputPollResponseInput,
+		ec.unmarshalInputPollsInput,
 		ec.unmarshalInputUserDetails,
 	)
 	first := true
@@ -733,13 +879,14 @@ input ClassRoomFlagsInput {
   is_screen_sharing_enabled: Boolean
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
+  quiz: [String]
 } 
 
 type ClassRoomFlags {
   id: String
   is_classroom_started: Boolean
   is_participants_present: Boolean
-  is__ad_displayed: Boolean
+  is_ad_displayed: Boolean
   is_break: Boolean
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
@@ -756,6 +903,42 @@ input Messages {
   meeting_id: String
   user_id: String
   time: Int
+  chat_type: String
+}
+
+input PollsInput{
+  id: String
+  meeting_id: String
+  course_id: String
+  topic_id: String
+  question: String
+  options: [String]
+  status: String
+}
+
+type Polls{
+  id: String
+  meeting_id: String
+  course_id: String
+  topic_id: String
+  question: String
+  options: [String]
+  poll_ids: String
+  status: String
+}
+
+input PollResponseInput {
+  id: String
+  poll_id: String
+  response: String
+  user_ids: [String]
+}
+
+type PollResponse {
+  id: String
+  poll_id: String
+  response: String
+  user_ids: [String]
 }
 
 type Mutation {
@@ -768,6 +951,9 @@ type Mutation {
   addUserTags(ids: [UserDetails], tags:[String]): Boolean
   addClassroomFlags(input: ClassRoomFlagsInput): ClassRoomFlags
   addMessagesMeet(message: Messages): Boolean
+  addPoll(input: PollsInput): Polls
+  updatePoll(input: PollsInput): Polls
+  updatePollOptions(input: PollResponseInput): PollResponse
 }
 
 type Query {
@@ -810,6 +996,21 @@ func (ec *executionContext) field_Mutation_addMessagesMeet_args(ctx context.Cont
 		}
 	}
 	args["message"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_addPoll_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.PollsInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOPollsInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPollsInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -975,6 +1176,36 @@ func (ec *executionContext) field_Mutation_sendNotificationWithLink_args(ctx con
 		}
 	}
 	args["link"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updatePollOptions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.PollResponseInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOPollResponseInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPollResponseInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updatePoll_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.PollsInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOPollsInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPollsInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1268,8 +1499,8 @@ func (ec *executionContext) fieldContext_ClassRoomFlags_is_participants_present(
 	return fc, nil
 }
 
-func (ec *executionContext) _ClassRoomFlags_is__ad_displayed(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ClassRoomFlags_is__ad_displayed(ctx, field)
+func (ec *executionContext) _ClassRoomFlags_is_ad_displayed(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_ad_displayed(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1296,7 +1527,7 @@ func (ec *executionContext) _ClassRoomFlags_is__ad_displayed(ctx context.Context
 	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ClassRoomFlags_is__ad_displayed(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_ad_displayed(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ClassRoomFlags",
 		Field:      field,
@@ -2783,8 +3014,8 @@ func (ec *executionContext) fieldContext_Mutation_addClassroomFlags(ctx context.
 				return ec.fieldContext_ClassRoomFlags_is_classroom_started(ctx, field)
 			case "is_participants_present":
 				return ec.fieldContext_ClassRoomFlags_is_participants_present(ctx, field)
-			case "is__ad_displayed":
-				return ec.fieldContext_ClassRoomFlags_is__ad_displayed(ctx, field)
+			case "is_ad_displayed":
+				return ec.fieldContext_ClassRoomFlags_is_ad_displayed(ctx, field)
 			case "is_break":
 				return ec.fieldContext_ClassRoomFlags_is_break(ctx, field)
 			case "is_moderator_joined":
@@ -2867,6 +3098,208 @@ func (ec *executionContext) fieldContext_Mutation_addMessagesMeet(ctx context.Co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addMessagesMeet_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addPoll(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addPoll(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddPoll(rctx, fc.Args["input"].(*model.PollsInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Polls)
+	fc.Result = res
+	return ec.marshalOPolls2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPolls(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addPoll(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Polls_id(ctx, field)
+			case "meeting_id":
+				return ec.fieldContext_Polls_meeting_id(ctx, field)
+			case "course_id":
+				return ec.fieldContext_Polls_course_id(ctx, field)
+			case "topic_id":
+				return ec.fieldContext_Polls_topic_id(ctx, field)
+			case "question":
+				return ec.fieldContext_Polls_question(ctx, field)
+			case "options":
+				return ec.fieldContext_Polls_options(ctx, field)
+			case "poll_ids":
+				return ec.fieldContext_Polls_poll_ids(ctx, field)
+			case "status":
+				return ec.fieldContext_Polls_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Polls", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addPoll_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updatePoll(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updatePoll(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdatePoll(rctx, fc.Args["input"].(*model.PollsInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Polls)
+	fc.Result = res
+	return ec.marshalOPolls2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPolls(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updatePoll(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Polls_id(ctx, field)
+			case "meeting_id":
+				return ec.fieldContext_Polls_meeting_id(ctx, field)
+			case "course_id":
+				return ec.fieldContext_Polls_course_id(ctx, field)
+			case "topic_id":
+				return ec.fieldContext_Polls_topic_id(ctx, field)
+			case "question":
+				return ec.fieldContext_Polls_question(ctx, field)
+			case "options":
+				return ec.fieldContext_Polls_options(ctx, field)
+			case "poll_ids":
+				return ec.fieldContext_Polls_poll_ids(ctx, field)
+			case "status":
+				return ec.fieldContext_Polls_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Polls", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updatePoll_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updatePollOptions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updatePollOptions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdatePollOptions(rctx, fc.Args["input"].(*model.PollResponseInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.PollResponse)
+	fc.Result = res
+	return ec.marshalOPollResponse2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPollResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updatePollOptions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_PollResponse_id(ctx, field)
+			case "poll_id":
+				return ec.fieldContext_PollResponse_poll_id(ctx, field)
+			case "response":
+				return ec.fieldContext_PollResponse_response(ctx, field)
+			case "user_ids":
+				return ec.fieldContext_PollResponse_user_ids(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PollResponse", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updatePollOptions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3189,6 +3622,498 @@ func (ec *executionContext) fieldContext_PaginatedTagsData_prevPageSnapShot(ctx 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PollResponse_id(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PollResponse_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PollResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PollResponse_poll_id(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_poll_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PollID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PollResponse_poll_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PollResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PollResponse_response(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_response(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Response, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PollResponse_response(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PollResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PollResponse_user_ids(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_user_ids(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserIds, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PollResponse_user_ids(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PollResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_id(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_meeting_id(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_meeting_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MeetingID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_meeting_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_course_id(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_course_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CourseID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_course_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_topic_id(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_topic_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TopicID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_topic_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_question(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_question(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Question, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_question(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_options(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_options(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Options, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_options(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_poll_ids(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_poll_ids(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PollIds, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_poll_ids(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_status(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5515,7 +6440,7 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "is_classroom_started", "is_participants_present", "is__ad_displayed", "is_break", "is_moderator_joined", "is_trainer_joined", "ad_video_url", "is_microphone_enabled", "is_video_sharing_enabled", "is_screen_sharing_enabled", "is_chat_enabled", "is_qa_enabled"}
+	fieldsInOrder := [...]string{"id", "is_classroom_started", "is_participants_present", "is__ad_displayed", "is_break", "is_moderator_joined", "is_trainer_joined", "ad_video_url", "is_microphone_enabled", "is_video_sharing_enabled", "is_screen_sharing_enabled", "is_chat_enabled", "is_qa_enabled", "quiz"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5626,6 +6551,14 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
+		case "quiz":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quiz"))
+			it.Quiz, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -5691,7 +6624,7 @@ func (ec *executionContext) unmarshalInputMessages(ctx context.Context, obj inte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"body", "meeting_id", "user_id", "time"}
+	fieldsInOrder := [...]string{"body", "meeting_id", "user_id", "time", "chat_type"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5727,6 +6660,14 @@ func (ec *executionContext) unmarshalInputMessages(ctx context.Context, obj inte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("time"))
 			it.Time, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "chat_type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chat_type"))
+			it.ChatType, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5771,6 +6712,134 @@ func (ec *executionContext) unmarshalInputNotificationInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
 			it.UserID, err = ec.unmarshalNString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPollResponseInput(ctx context.Context, obj interface{}) (model.PollResponseInput, error) {
+	var it model.PollResponseInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "poll_id", "response", "user_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "poll_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("poll_id"))
+			it.PollID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "response":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("response"))
+			it.Response, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_ids":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_ids"))
+			it.UserIds, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPollsInput(ctx context.Context, obj interface{}) (model.PollsInput, error) {
+	var it model.PollsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "meeting_id", "course_id", "topic_id", "question", "options", "status"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "meeting_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("meeting_id"))
+			it.MeetingID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "course_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("course_id"))
+			it.CourseID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "topic_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("topic_id"))
+			it.TopicID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "question":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("question"))
+			it.Question, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "options":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("options"))
+			it.Options, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "status":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			it.Status, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5846,9 +6915,9 @@ func (ec *executionContext) _ClassRoomFlags(ctx context.Context, sel ast.Selecti
 
 			out.Values[i] = ec._ClassRoomFlags_is_participants_present(ctx, field, obj)
 
-		case "is__ad_displayed":
+		case "is_ad_displayed":
 
-			out.Values[i] = ec._ClassRoomFlags_is__ad_displayed(ctx, field, obj)
+			out.Values[i] = ec._ClassRoomFlags_is_ad_displayed(ctx, field, obj)
 
 		case "is_break":
 
@@ -6133,6 +7202,24 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 				return ec._Mutation_addMessagesMeet(ctx, field)
 			})
 
+		case "addPoll":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addPoll(ctx, field)
+			})
+
+		case "updatePoll":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updatePoll(ctx, field)
+			})
+
+		case "updatePollOptions":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updatePollOptions(ctx, field)
+			})
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6229,6 +7316,96 @@ func (ec *executionContext) _PaginatedTagsData(ctx context.Context, sel ast.Sele
 		case "prevPageSnapShot":
 
 			out.Values[i] = ec._PaginatedTagsData_prevPageSnapShot(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var pollResponseImplementors = []string{"PollResponse"}
+
+func (ec *executionContext) _PollResponse(ctx context.Context, sel ast.SelectionSet, obj *model.PollResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pollResponseImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PollResponse")
+		case "id":
+
+			out.Values[i] = ec._PollResponse_id(ctx, field, obj)
+
+		case "poll_id":
+
+			out.Values[i] = ec._PollResponse_poll_id(ctx, field, obj)
+
+		case "response":
+
+			out.Values[i] = ec._PollResponse_response(ctx, field, obj)
+
+		case "user_ids":
+
+			out.Values[i] = ec._PollResponse_user_ids(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var pollsImplementors = []string{"Polls"}
+
+func (ec *executionContext) _Polls(ctx context.Context, sel ast.SelectionSet, obj *model.Polls) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pollsImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Polls")
+		case "id":
+
+			out.Values[i] = ec._Polls_id(ctx, field, obj)
+
+		case "meeting_id":
+
+			out.Values[i] = ec._Polls_meeting_id(ctx, field, obj)
+
+		case "course_id":
+
+			out.Values[i] = ec._Polls_course_id(ctx, field, obj)
+
+		case "topic_id":
+
+			out.Values[i] = ec._Polls_topic_id(ctx, field, obj)
+
+		case "question":
+
+			out.Values[i] = ec._Polls_question(ctx, field, obj)
+
+		case "options":
+
+			out.Values[i] = ec._Polls_options(ctx, field, obj)
+
+		case "poll_ids":
+
+			out.Values[i] = ec._Polls_poll_ids(ctx, field, obj)
+
+		case "status":
+
+			out.Values[i] = ec._Polls_status(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -7296,6 +8473,36 @@ func (ec *executionContext) marshalOPaginatedTagsData2ᚖgithubᚗcomᚋzicops�
 		return graphql.Null
 	}
 	return ec._PaginatedTagsData(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPollResponse2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPollResponse(ctx context.Context, sel ast.SelectionSet, v *model.PollResponse) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PollResponse(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPollResponseInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPollResponseInput(ctx context.Context, v interface{}) (*model.PollResponseInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPollResponseInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOPolls2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPolls(ctx context.Context, sel ast.SelectionSet, v *model.Polls) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Polls(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPollsInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPollsInput(ctx context.Context, v interface{}) (*model.PollsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPollsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

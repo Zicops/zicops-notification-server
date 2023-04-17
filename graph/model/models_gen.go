@@ -6,7 +6,7 @@ type ClassRoomFlags struct {
 	ID                     *string `json:"id"`
 	IsClassroomStarted     *bool   `json:"is_classroom_started"`
 	IsParticipantsPresent  *bool   `json:"is_participants_present"`
-	IsAdDisplayed          *bool   `json:"is__ad_displayed"`
+	IsAdDisplayed          *bool   `json:"is_ad_displayed"`
 	IsBreak                *bool   `json:"is_break"`
 	IsModeratorJoined      *bool   `json:"is_moderator_joined"`
 	IsTrainerJoined        *bool   `json:"is_trainer_joined"`
@@ -19,19 +19,20 @@ type ClassRoomFlags struct {
 }
 
 type ClassRoomFlagsInput struct {
-	ID                     *string `json:"id"`
-	IsClassroomStarted     *bool   `json:"is_classroom_started"`
-	IsParticipantsPresent  *bool   `json:"is_participants_present"`
-	IsAdDisplayed          *bool   `json:"is__ad_displayed"`
-	IsBreak                *bool   `json:"is_break"`
-	IsModeratorJoined      *bool   `json:"is_moderator_joined"`
-	IsTrainerJoined        *bool   `json:"is_trainer_joined"`
-	AdVideoURL             *string `json:"ad_video_url"`
-	IsMicrophoneEnabled    *bool   `json:"is_microphone_enabled"`
-	IsVideoSharingEnabled  *bool   `json:"is_video_sharing_enabled"`
-	IsScreenSharingEnabled *bool   `json:"is_screen_sharing_enabled"`
-	IsChatEnabled          *bool   `json:"is_chat_enabled"`
-	IsQaEnabled            *bool   `json:"is_qa_enabled"`
+	ID                     *string   `json:"id"`
+	IsClassroomStarted     *bool     `json:"is_classroom_started"`
+	IsParticipantsPresent  *bool     `json:"is_participants_present"`
+	IsAdDisplayed          *bool     `json:"is__ad_displayed"`
+	IsBreak                *bool     `json:"is_break"`
+	IsModeratorJoined      *bool     `json:"is_moderator_joined"`
+	IsTrainerJoined        *bool     `json:"is_trainer_joined"`
+	AdVideoURL             *string   `json:"ad_video_url"`
+	IsMicrophoneEnabled    *bool     `json:"is_microphone_enabled"`
+	IsVideoSharingEnabled  *bool     `json:"is_video_sharing_enabled"`
+	IsScreenSharingEnabled *bool     `json:"is_screen_sharing_enabled"`
+	IsChatEnabled          *bool     `json:"is_chat_enabled"`
+	IsQaEnabled            *bool     `json:"is_qa_enabled"`
+	Quiz                   []*string `json:"quiz"`
 }
 
 type FirestoreData struct {
@@ -68,6 +69,7 @@ type Messages struct {
 	MeetingID *string `json:"meeting_id"`
 	UserID    *string `json:"user_id"`
 	Time      *int    `json:"time"`
+	ChatType  *string `json:"chat_type"`
 }
 
 type Notification struct {
@@ -90,6 +92,41 @@ type PaginatedNotifications struct {
 type PaginatedTagsData struct {
 	Data             []*TagsData `json:"data"`
 	PrevPageSnapShot *string     `json:"prevPageSnapShot"`
+}
+
+type PollResponse struct {
+	ID       *string   `json:"id"`
+	PollID   *string   `json:"poll_id"`
+	Response *string   `json:"response"`
+	UserIds  []*string `json:"user_ids"`
+}
+
+type PollResponseInput struct {
+	ID       *string   `json:"id"`
+	PollID   *string   `json:"poll_id"`
+	Response *string   `json:"response"`
+	UserIds  []*string `json:"user_ids"`
+}
+
+type Polls struct {
+	ID        *string   `json:"id"`
+	MeetingID *string   `json:"meeting_id"`
+	CourseID  *string   `json:"course_id"`
+	TopicID   *string   `json:"topic_id"`
+	Question  *string   `json:"question"`
+	Options   []*string `json:"options"`
+	PollIds   *string   `json:"poll_ids"`
+	Status    *string   `json:"status"`
+}
+
+type PollsInput struct {
+	ID        *string   `json:"id"`
+	MeetingID *string   `json:"meeting_id"`
+	CourseID  *string   `json:"course_id"`
+	TopicID   *string   `json:"topic_id"`
+	Question  *string   `json:"question"`
+	Options   []*string `json:"options"`
+	Status    *string   `json:"status"`
 }
 
 type TagsData struct {
