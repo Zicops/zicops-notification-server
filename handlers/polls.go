@@ -161,7 +161,7 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 			return nil, err
 		}
 	} else if input.UserIds != nil {
-		iter := global.Client.Collection("poll_response").Where("user_ids", "array-contains", *input.UserIds).Documents(ctx)
+		iter := global.Client.Collection("poll_response").Where("user_ids", "array-contains", *input.UserIds).Where("poll_id", "==", *input.PollID).Documents(ctx)
 		for {
 			doc, err := iter.Next()
 			//see if iterator is done
