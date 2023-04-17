@@ -109,6 +109,12 @@ type PollResponseInput struct {
 	UserIds  *string `json:"user_ids"`
 }
 
+type PollResults struct {
+	PollID        *string         `json:"poll_id"`
+	Question      *string         `json:"question"`
+	PollResponses []*PollResponse `json:"poll_responses"`
+}
+
 type Polls struct {
 	ID        *string   `json:"id"`
 	MeetingID *string   `json:"meeting_id"`

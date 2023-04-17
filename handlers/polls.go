@@ -205,3 +205,75 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 	}
 	return &res, nil
 }
+
+func GetPollResults(ctx context.Context, pollID *string) (*model.PollResults, error) {
+	if pollID == nil {
+		return nil, fmt.Errorf("please enter poll id")
+	}
+	_, err := GetClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	dataS, err := global.Client.Collection("polls").Doc(*pollID).Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	data := dataS.Data()
+	question := data["question"].(string)
+
+	iter := global.Client.Collection("poll_response").Where("poll_id", "==", pollID).Documents(ctx)
+	var pollData []map[string]interface{}
+	var ids []string
+	for {
+		doc, err := iter.Next()
+		//see if iterator is done
+		if err == iterator.Done {
+			break
+		}
+
+		//see if the error is no more items in iterator
+		if err != nil && err.Error() == "no more items in iterator" {
+			break
+			//return nil, nil
+		}
+
+		if err != nil {
+			log.Fatalf("Failed to iterate: %v", err)
+			return nil, err
+		}
+
+		pollData = append(pollData, doc.Data())
+		ids = append(ids, doc.Ref.ID)
+	}
+	if pollData == nil {
+		return nil, nil
+	}
+	if len(pollData) == 0 {
+		return nil, nil
+	}
+
+	var pollResponse []*model.PollResponse
+	for k, vv := range pollData {
+		v := vv
+		response := v["response"].(string)
+		users := v["user_ids"].([]interface{})
+		for _, x := range users {
+			userId := x.(string)
+			tmp := model.PollResponse{
+				ID:       &ids[k],
+				PollID:   pollID,
+				Response: &response,
+				UserIds:  &userId,
+			}
+			pollResponse = append(pollResponse, &tmp)
+		}
+
+	}
+	res := model.PollResults{
+		PollID:        pollID,
+		Question:      &question,
+		PollResponses: pollResponse,
+	}
+	return &res, nil
+}

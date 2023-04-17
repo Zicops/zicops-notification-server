@@ -174,6 +174,16 @@ func (r *queryResolver) GetTagUsers(ctx context.Context, prevPageSnapShot *strin
 	return resp, nil
 }
 
+// GetPollResults is the resolver for the getPollResults field.
+func (r *queryResolver) GetPollResults(ctx context.Context, pollID *string) (*model.PollResults, error) {
+	resp, err := handlers.GetPollResults(ctx, pollID)
+	if err != nil {
+		log.Printf("Got error while getting poll results: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
