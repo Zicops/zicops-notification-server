@@ -125,6 +125,12 @@ type Polls{
   status: String
 }
 
+type PollResults{
+  poll_id: String
+  question: String
+  poll_responses: [PollResponse]
+}
+
 input PollResponseInput {
   id: String
   poll_id: String
@@ -159,4 +165,5 @@ type Query {
   getAllPaginatedNotifications(pageIndex: Int!, pageSize: Int!, is_read: Boolean): [FirestoreMessage]
   getUserLspIdTags(user_lsp_id: [String]): [TagsData]
   getTagUsers(prevPageSnapShot: String, pageSize: Int, tags:[String]): PaginatedTagsData
+  getPollResults(poll_id: String): PollResults
 }
