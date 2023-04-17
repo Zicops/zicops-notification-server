@@ -3,19 +3,20 @@
 package model
 
 type ClassRoomFlags struct {
-	ID                     *string `json:"id"`
-	IsClassroomStarted     *bool   `json:"is_classroom_started"`
-	IsParticipantsPresent  *bool   `json:"is_participants_present"`
-	IsAdDisplayed          *bool   `json:"is_ad_displayed"`
-	IsBreak                *bool   `json:"is_break"`
-	IsModeratorJoined      *bool   `json:"is_moderator_joined"`
-	IsTrainerJoined        *bool   `json:"is_trainer_joined"`
-	AdVideoURL             *string `json:"ad_video_url"`
-	IsMicrophoneEnabled    *bool   `json:"is_microphone_enabled"`
-	IsVideoSharingEnabled  *bool   `json:"is_video_sharing_enabled"`
-	IsScreenSharingEnabled *bool   `json:"is_screen_sharing_enabled"`
-	IsChatEnabled          *bool   `json:"is_chat_enabled"`
-	IsQaEnabled            *bool   `json:"is_qa_enabled"`
+	ID                     *string   `json:"id"`
+	IsClassroomStarted     *bool     `json:"is_classroom_started"`
+	IsParticipantsPresent  *bool     `json:"is_participants_present"`
+	IsAdDisplayed          *bool     `json:"is_ad_displayed"`
+	IsBreak                *bool     `json:"is_break"`
+	IsModeratorJoined      *bool     `json:"is_moderator_joined"`
+	IsTrainerJoined        *bool     `json:"is_trainer_joined"`
+	AdVideoURL             *string   `json:"ad_video_url"`
+	IsMicrophoneEnabled    *bool     `json:"is_microphone_enabled"`
+	IsVideoSharingEnabled  *bool     `json:"is_video_sharing_enabled"`
+	IsScreenSharingEnabled *bool     `json:"is_screen_sharing_enabled"`
+	IsChatEnabled          *bool     `json:"is_chat_enabled"`
+	IsQaEnabled            *bool     `json:"is_qa_enabled"`
+	Quiz                   []*string `json:"quiz"`
 }
 
 type ClassRoomFlagsInput struct {
@@ -95,17 +96,17 @@ type PaginatedTagsData struct {
 }
 
 type PollResponse struct {
-	ID       *string   `json:"id"`
-	PollID   *string   `json:"poll_id"`
-	Response *string   `json:"response"`
-	UserIds  []*string `json:"user_ids"`
+	ID       *string `json:"id"`
+	PollID   *string `json:"poll_id"`
+	Response *string `json:"response"`
+	UserIds  *string `json:"user_ids"`
 }
 
 type PollResponseInput struct {
-	ID       *string   `json:"id"`
-	PollID   *string   `json:"poll_id"`
-	Response *string   `json:"response"`
-	UserIds  []*string `json:"user_ids"`
+	ID       *string `json:"id"`
+	PollID   *string `json:"poll_id"`
+	Response *string `json:"response"`
+	UserIds  *string `json:"user_ids"`
 }
 
 type Polls struct {
@@ -115,7 +116,7 @@ type Polls struct {
 	TopicID   *string   `json:"topic_id"`
 	Question  *string   `json:"question"`
 	Options   []*string `json:"options"`
-	PollIds   *string   `json:"poll_ids"`
+	PollIds   []*string `json:"poll_ids"`
 	Status    *string   `json:"status"`
 }
 
@@ -126,6 +127,7 @@ type PollsInput struct {
 	TopicID   *string   `json:"topic_id"`
 	Question  *string   `json:"question"`
 	Options   []*string `json:"options"`
+	PollIds   []*string `json:"poll_ids"`
 	Status    *string   `json:"status"`
 }
 
