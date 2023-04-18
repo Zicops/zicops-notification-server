@@ -30,6 +30,7 @@ func AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*
 		"is_screen_sharing_enabled": input.IsScreenSharingEnabled,
 		"is_chat_enabled":           input.IsChatEnabled,
 		"is_qa_enabled":             input.IsQaEnabled,
+		"quiz":                      input.Quiz,
 	})
 	if err != nil {
 		return nil, err
@@ -49,6 +50,7 @@ func AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*
 		IsScreenSharingEnabled: input.IsScreenSharingEnabled,
 		IsChatEnabled:          input.IsChatEnabled,
 		IsQaEnabled:            input.IsQaEnabled,
+		Quiz:                   input.Quiz,
 	}
 	return &res, nil
 }
