@@ -181,7 +181,12 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 				return nil, err
 			}
 			id := doc.Ref.ID
-			_, err = global.Client.Collection("poll_response").Doc(id).Delete(ctx)
+			_, err = global.Client.Collection("poll_response").Doc(id).Update(ctx, []firestore.Update{
+				{
+					Path:  "poll_response",
+					Value: firestore.ArrayRemove(input.UserIds),
+				},
+			})
 			if err != nil {
 				return nil, err
 			}
