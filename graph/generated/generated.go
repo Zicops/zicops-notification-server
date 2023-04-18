@@ -128,14 +128,15 @@ type ComplexityRoot struct {
 	}
 
 	Polls struct {
-		CourseID  func(childComplexity int) int
-		ID        func(childComplexity int) int
-		MeetingID func(childComplexity int) int
-		Options   func(childComplexity int) int
-		PollIds   func(childComplexity int) int
-		Question  func(childComplexity int) int
-		Status    func(childComplexity int) int
-		TopicID   func(childComplexity int) int
+		CourseID      func(childComplexity int) int
+		ID            func(childComplexity int) int
+		MeetingID     func(childComplexity int) int
+		Options       func(childComplexity int) int
+		PollName      func(childComplexity int) int
+		PollOptionIds func(childComplexity int) int
+		Question      func(childComplexity int) int
+		Status        func(childComplexity int) int
+		TopicID       func(childComplexity int) int
 	}
 
 	Query struct {
@@ -674,12 +675,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Polls.Options(childComplexity), true
 
-	case "Polls.poll_ids":
-		if e.complexity.Polls.PollIds == nil {
+	case "Polls.poll_name":
+		if e.complexity.Polls.PollName == nil {
 			break
 		}
 
-		return e.complexity.Polls.PollIds(childComplexity), true
+		return e.complexity.Polls.PollName(childComplexity), true
+
+	case "Polls.poll_option_ids":
+		if e.complexity.Polls.PollOptionIds == nil {
+			break
+		}
+
+		return e.complexity.Polls.PollOptionIds(childComplexity), true
 
 	case "Polls.question":
 		if e.complexity.Polls.Question == nil {
@@ -973,23 +981,25 @@ input Messages {
 
 input PollsInput{
   id: String
+  poll_name: String
   meeting_id: String
   course_id: String
   topic_id: String
   question: String
   options: [String]
-  poll_ids: [String]
+  poll_option_ids: [String]
   status: String
 }
 
 type Polls{
   id: String
+  poll_name: String
   meeting_id: String
   course_id: String
   topic_id: String
   question: String
   options: [String]
-  poll_ids: [String]
+  poll_option_ids: [String]
   status: String
 }
 
@@ -3294,6 +3304,8 @@ func (ec *executionContext) fieldContext_Mutation_addPoll(ctx context.Context, f
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Polls_id(ctx, field)
+			case "poll_name":
+				return ec.fieldContext_Polls_poll_name(ctx, field)
 			case "meeting_id":
 				return ec.fieldContext_Polls_meeting_id(ctx, field)
 			case "course_id":
@@ -3304,8 +3316,8 @@ func (ec *executionContext) fieldContext_Mutation_addPoll(ctx context.Context, f
 				return ec.fieldContext_Polls_question(ctx, field)
 			case "options":
 				return ec.fieldContext_Polls_options(ctx, field)
-			case "poll_ids":
-				return ec.fieldContext_Polls_poll_ids(ctx, field)
+			case "poll_option_ids":
+				return ec.fieldContext_Polls_poll_option_ids(ctx, field)
 			case "status":
 				return ec.fieldContext_Polls_status(ctx, field)
 			}
@@ -3364,6 +3376,8 @@ func (ec *executionContext) fieldContext_Mutation_updatePoll(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Polls_id(ctx, field)
+			case "poll_name":
+				return ec.fieldContext_Polls_poll_name(ctx, field)
 			case "meeting_id":
 				return ec.fieldContext_Polls_meeting_id(ctx, field)
 			case "course_id":
@@ -3374,8 +3388,8 @@ func (ec *executionContext) fieldContext_Mutation_updatePoll(ctx context.Context
 				return ec.fieldContext_Polls_question(ctx, field)
 			case "options":
 				return ec.fieldContext_Polls_options(ctx, field)
-			case "poll_ids":
-				return ec.fieldContext_Polls_poll_ids(ctx, field)
+			case "poll_option_ids":
+				return ec.fieldContext_Polls_poll_option_ids(ctx, field)
 			case "status":
 				return ec.fieldContext_Polls_status(ctx, field)
 			}
@@ -4169,6 +4183,47 @@ func (ec *executionContext) fieldContext_Polls_id(ctx context.Context, field gra
 	return fc, nil
 }
 
+func (ec *executionContext) _Polls_poll_name(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_poll_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PollName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_poll_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Polls_meeting_id(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Polls_meeting_id(ctx, field)
 	if err != nil {
@@ -4374,8 +4429,8 @@ func (ec *executionContext) fieldContext_Polls_options(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Polls_poll_ids(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Polls_poll_ids(ctx, field)
+func (ec *executionContext) _Polls_poll_option_ids(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_poll_option_ids(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4388,7 +4443,7 @@ func (ec *executionContext) _Polls_poll_ids(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.PollIds, nil
+		return obj.PollOptionIds, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4402,7 +4457,7 @@ func (ec *executionContext) _Polls_poll_ids(ctx context.Context, field graphql.C
 	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Polls_poll_ids(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Polls_poll_option_ids(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Polls",
 		Field:      field,
@@ -7177,7 +7232,7 @@ func (ec *executionContext) unmarshalInputPollsInput(ctx context.Context, obj in
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "meeting_id", "course_id", "topic_id", "question", "options", "poll_ids", "status"}
+	fieldsInOrder := [...]string{"id", "poll_name", "meeting_id", "course_id", "topic_id", "question", "options", "poll_option_ids", "status"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7189,6 +7244,14 @@ func (ec *executionContext) unmarshalInputPollsInput(ctx context.Context, obj in
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 			it.ID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "poll_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("poll_name"))
+			it.PollName, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7232,11 +7295,11 @@ func (ec *executionContext) unmarshalInputPollsInput(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
-		case "poll_ids":
+		case "poll_option_ids":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("poll_ids"))
-			it.PollIds, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("poll_option_ids"))
+			it.PollOptionIds, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7863,6 +7926,10 @@ func (ec *executionContext) _Polls(ctx context.Context, sel ast.SelectionSet, ob
 
 			out.Values[i] = ec._Polls_id(ctx, field, obj)
 
+		case "poll_name":
+
+			out.Values[i] = ec._Polls_poll_name(ctx, field, obj)
+
 		case "meeting_id":
 
 			out.Values[i] = ec._Polls_meeting_id(ctx, field, obj)
@@ -7883,9 +7950,9 @@ func (ec *executionContext) _Polls(ctx context.Context, sel ast.SelectionSet, ob
 
 			out.Values[i] = ec._Polls_options(ctx, field, obj)
 
-		case "poll_ids":
+		case "poll_option_ids":
 
-			out.Values[i] = ec._Polls_poll_ids(ctx, field, obj)
+			out.Values[i] = ec._Polls_poll_option_ids(ctx, field, obj)
 
 		case "status":
 

@@ -105,23 +105,25 @@ input Messages {
 
 input PollsInput{
   id: String
+  poll_name: String
   meeting_id: String
   course_id: String
   topic_id: String
   question: String
   options: [String]
-  poll_ids: [String]
+  poll_option_ids: [String]
   status: String
 }
 
 type Polls{
   id: String
+  poll_name: String
   meeting_id: String
   course_id: String
   topic_id: String
   question: String
   options: [String]
-  poll_ids: [String]
+  poll_option_ids: [String]
   status: String
 }
 

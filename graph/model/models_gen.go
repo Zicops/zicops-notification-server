@@ -116,25 +116,27 @@ type PollResults struct {
 }
 
 type Polls struct {
-	ID        *string   `json:"id"`
-	MeetingID *string   `json:"meeting_id"`
-	CourseID  *string   `json:"course_id"`
-	TopicID   *string   `json:"topic_id"`
-	Question  *string   `json:"question"`
-	Options   []*string `json:"options"`
-	PollIds   []*string `json:"poll_ids"`
-	Status    *string   `json:"status"`
+	ID            *string   `json:"id"`
+	PollName      *string   `json:"poll_name"`
+	MeetingID     *string   `json:"meeting_id"`
+	CourseID      *string   `json:"course_id"`
+	TopicID       *string   `json:"topic_id"`
+	Question      *string   `json:"question"`
+	Options       []*string `json:"options"`
+	PollOptionIds []*string `json:"poll_option_ids"`
+	Status        *string   `json:"status"`
 }
 
 type PollsInput struct {
-	ID        *string   `json:"id"`
-	MeetingID *string   `json:"meeting_id"`
-	CourseID  *string   `json:"course_id"`
-	TopicID   *string   `json:"topic_id"`
-	Question  *string   `json:"question"`
-	Options   []*string `json:"options"`
-	PollIds   []*string `json:"poll_ids"`
-	Status    *string   `json:"status"`
+	ID            *string   `json:"id"`
+	PollName      *string   `json:"poll_name"`
+	MeetingID     *string   `json:"meeting_id"`
+	CourseID      *string   `json:"course_id"`
+	TopicID       *string   `json:"topic_id"`
+	Question      *string   `json:"question"`
+	Options       []*string `json:"options"`
+	PollOptionIds []*string `json:"poll_option_ids"`
+	Status        *string   `json:"status"`
 }
 
 type PublishedQuiz struct {

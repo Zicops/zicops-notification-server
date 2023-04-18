@@ -42,6 +42,7 @@ func AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
 		pollIds = append(pollIds, poll_id)
 	}
 	_, err = global.Client.Collection("polls").Doc(id).Set(ctx, map[string]interface{}{
+		"poll_name":  *input.PollName,
 		"meeting_id": *input.MeetingID,
 		"course_id":  *input.CourseID,
 		"topic_id":   *input.TopicID,
@@ -58,14 +59,14 @@ func AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
 		tmp = append(tmp, &v)
 	}
 	res := model.Polls{
-		ID:        &id,
-		MeetingID: input.MeetingID,
-		CourseID:  input.CourseID,
-		TopicID:   input.TopicID,
-		Question:  input.Question,
-		Options:   input.Options,
-		PollIds:   tmp,
-		Status:    input.Status,
+		ID:            &id,
+		MeetingID:     input.MeetingID,
+		CourseID:      input.CourseID,
+		TopicID:       input.TopicID,
+		Question:      input.Question,
+		Options:       input.Options,
+		PollOptionIds: tmp,
+		Status:        input.Status,
 	}
 	return &res, nil
 }
@@ -122,6 +123,7 @@ func UpdatePoll(ctx context.Context, input *model.PollsInput) (*model.Polls, err
 	}
 
 	res := model.Polls{
+		PollName:  input.PollName,
 		ID:        input.ID,
 		MeetingID: input.MeetingID,
 		CourseID:  input.CourseID,
