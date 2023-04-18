@@ -115,10 +115,15 @@ type ComplexityRoot struct {
 	}
 
 	PollResponse struct {
-		ID       func(childComplexity int) int
-		PollID   func(childComplexity int) int
-		Response func(childComplexity int) int
-		UserIds  func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		CreatedBy func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Option    func(childComplexity int) int
+		PollID    func(childComplexity int) int
+		Response  func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+		UpdatedBy func(childComplexity int) int
+		UserID    func(childComplexity int) int
 	}
 
 	PollResults struct {
@@ -129,6 +134,8 @@ type ComplexityRoot struct {
 
 	Polls struct {
 		CourseID      func(childComplexity int) int
+		CreatedAt     func(childComplexity int) int
+		CreatedBy     func(childComplexity int) int
 		ID            func(childComplexity int) int
 		MeetingID     func(childComplexity int) int
 		Options       func(childComplexity int) int
@@ -137,6 +144,8 @@ type ComplexityRoot struct {
 		Question      func(childComplexity int) int
 		Status        func(childComplexity int) int
 		TopicID       func(childComplexity int) int
+		UpdatedAt     func(childComplexity int) int
+		UpdatedBy     func(childComplexity int) int
 	}
 
 	Query struct {
@@ -598,12 +607,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PaginatedTagsData.PrevPageSnapShot(childComplexity), true
 
+	case "PollResponse.created_at":
+		if e.complexity.PollResponse.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.PollResponse.CreatedAt(childComplexity), true
+
+	case "PollResponse.created_by":
+		if e.complexity.PollResponse.CreatedBy == nil {
+			break
+		}
+
+		return e.complexity.PollResponse.CreatedBy(childComplexity), true
+
 	case "PollResponse.id":
 		if e.complexity.PollResponse.ID == nil {
 			break
 		}
 
 		return e.complexity.PollResponse.ID(childComplexity), true
+
+	case "PollResponse.option":
+		if e.complexity.PollResponse.Option == nil {
+			break
+		}
+
+		return e.complexity.PollResponse.Option(childComplexity), true
 
 	case "PollResponse.poll_id":
 		if e.complexity.PollResponse.PollID == nil {
@@ -619,12 +649,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PollResponse.Response(childComplexity), true
 
-	case "PollResponse.user_ids":
-		if e.complexity.PollResponse.UserIds == nil {
+	case "PollResponse.updated_at":
+		if e.complexity.PollResponse.UpdatedAt == nil {
 			break
 		}
 
-		return e.complexity.PollResponse.UserIds(childComplexity), true
+		return e.complexity.PollResponse.UpdatedAt(childComplexity), true
+
+	case "PollResponse.updated_by":
+		if e.complexity.PollResponse.UpdatedBy == nil {
+			break
+		}
+
+		return e.complexity.PollResponse.UpdatedBy(childComplexity), true
+
+	case "PollResponse.user_id":
+		if e.complexity.PollResponse.UserID == nil {
+			break
+		}
+
+		return e.complexity.PollResponse.UserID(childComplexity), true
 
 	case "PollResults.poll_id":
 		if e.complexity.PollResults.PollID == nil {
@@ -653,6 +697,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Polls.CourseID(childComplexity), true
+
+	case "Polls.created_at":
+		if e.complexity.Polls.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Polls.CreatedAt(childComplexity), true
+
+	case "Polls.created_by":
+		if e.complexity.Polls.CreatedBy == nil {
+			break
+		}
+
+		return e.complexity.Polls.CreatedBy(childComplexity), true
 
 	case "Polls.id":
 		if e.complexity.Polls.ID == nil {
@@ -709,6 +767,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Polls.TopicID(childComplexity), true
+
+	case "Polls.updated_at":
+		if e.complexity.Polls.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Polls.UpdatedAt(childComplexity), true
+
+	case "Polls.updated_by":
+		if e.complexity.Polls.UpdatedBy == nil {
+			break
+		}
+
+		return e.complexity.Polls.UpdatedBy(childComplexity), true
 
 	case "Query.getAll":
 		if e.complexity.Query.GetAll == nil {
@@ -941,7 +1013,7 @@ input ClassRoomFlagsInput {
   id: String
   is_classroom_started: Boolean
   is_participants_present: Boolean
-  is__ad_displayed: Boolean
+  is_ad_displayed: Boolean
   is_break: Boolean
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
@@ -1001,6 +1073,10 @@ type Polls{
   options: [String]
   poll_option_ids: [String]
   status: String
+  created_at: Int
+  updated_at: Int
+  created_by: String
+  updated_by: String
 }
 
 type PollResults{
@@ -1012,15 +1088,21 @@ type PollResults{
 input PollResponseInput {
   id: String
   poll_id: String
+  option: String
   response: String
-  user_ids: String
+  user_id: String
 }
 
 type PollResponse {
   id: String
   poll_id: String
   response: String
-  user_ids: String
+  user_id: String
+  option: String
+  created_at: Int
+  updated_at: Int
+  created_by: String
+  updated_by: String
 }
 
 input PublishedQuiz {
@@ -3320,6 +3402,14 @@ func (ec *executionContext) fieldContext_Mutation_addPoll(ctx context.Context, f
 				return ec.fieldContext_Polls_poll_option_ids(ctx, field)
 			case "status":
 				return ec.fieldContext_Polls_status(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Polls_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Polls_updated_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Polls_created_by(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Polls_updated_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Polls", field.Name)
 		},
@@ -3392,6 +3482,14 @@ func (ec *executionContext) fieldContext_Mutation_updatePoll(ctx context.Context
 				return ec.fieldContext_Polls_poll_option_ids(ctx, field)
 			case "status":
 				return ec.fieldContext_Polls_status(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Polls_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Polls_updated_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Polls_created_by(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Polls_updated_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Polls", field.Name)
 		},
@@ -3452,8 +3550,18 @@ func (ec *executionContext) fieldContext_Mutation_updatePollOptions(ctx context.
 				return ec.fieldContext_PollResponse_poll_id(ctx, field)
 			case "response":
 				return ec.fieldContext_PollResponse_response(ctx, field)
-			case "user_ids":
-				return ec.fieldContext_PollResponse_user_ids(ctx, field)
+			case "user_id":
+				return ec.fieldContext_PollResponse_user_id(ctx, field)
+			case "option":
+				return ec.fieldContext_PollResponse_option(ctx, field)
+			case "created_at":
+				return ec.fieldContext_PollResponse_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_PollResponse_updated_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_PollResponse_created_by(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_PollResponse_updated_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PollResponse", field.Name)
 		},
@@ -3968,8 +4076,8 @@ func (ec *executionContext) fieldContext_PollResponse_response(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _PollResponse_user_ids(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PollResponse_user_ids(ctx, field)
+func (ec *executionContext) _PollResponse_user_id(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_user_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3982,7 +4090,7 @@ func (ec *executionContext) _PollResponse_user_ids(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.UserIds, nil
+		return obj.UserID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3996,7 +4104,212 @@ func (ec *executionContext) _PollResponse_user_ids(ctx context.Context, field gr
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PollResponse_user_ids(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PollResponse_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PollResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PollResponse_option(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_option(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Option, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PollResponse_option(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PollResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PollResponse_created_at(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PollResponse_created_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PollResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PollResponse_updated_at(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_updated_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PollResponse_updated_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PollResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PollResponse_created_by(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_created_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PollResponse_created_by(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PollResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PollResponse_updated_by(ctx context.Context, field graphql.CollectedField, obj *model.PollResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PollResponse_updated_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PollResponse_updated_by(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PollResponse",
 		Field:      field,
@@ -4133,8 +4446,18 @@ func (ec *executionContext) fieldContext_PollResults_poll_responses(ctx context.
 				return ec.fieldContext_PollResponse_poll_id(ctx, field)
 			case "response":
 				return ec.fieldContext_PollResponse_response(ctx, field)
-			case "user_ids":
-				return ec.fieldContext_PollResponse_user_ids(ctx, field)
+			case "user_id":
+				return ec.fieldContext_PollResponse_user_id(ctx, field)
+			case "option":
+				return ec.fieldContext_PollResponse_option(ctx, field)
+			case "created_at":
+				return ec.fieldContext_PollResponse_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_PollResponse_updated_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_PollResponse_created_by(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_PollResponse_updated_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PollResponse", field.Name)
 		},
@@ -4499,6 +4822,170 @@ func (ec *executionContext) _Polls_status(ctx context.Context, field graphql.Col
 }
 
 func (ec *executionContext) fieldContext_Polls_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_created_at(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_created_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_updated_at(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_updated_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_updated_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_created_by(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_created_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_created_by(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Polls",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Polls_updated_by(ctx context.Context, field graphql.CollectedField, obj *model.Polls) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Polls_updated_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Polls_updated_by(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Polls",
 		Field:      field,
@@ -6892,7 +7379,7 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "is_classroom_started", "is_participants_present", "is__ad_displayed", "is_break", "is_moderator_joined", "is_trainer_joined", "ad_video_url", "is_microphone_enabled", "is_video_sharing_enabled", "is_screen_sharing_enabled", "is_chat_enabled", "is_qa_enabled", "quiz"}
+	fieldsInOrder := [...]string{"id", "is_classroom_started", "is_participants_present", "is_ad_displayed", "is_break", "is_moderator_joined", "is_trainer_joined", "ad_video_url", "is_microphone_enabled", "is_video_sharing_enabled", "is_screen_sharing_enabled", "is_chat_enabled", "is_qa_enabled", "quiz"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6923,10 +7410,10 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-		case "is__ad_displayed":
+		case "is_ad_displayed":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is__ad_displayed"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_ad_displayed"))
 			it.IsAdDisplayed, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
@@ -7180,7 +7667,7 @@ func (ec *executionContext) unmarshalInputPollResponseInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "poll_id", "response", "user_ids"}
+	fieldsInOrder := [...]string{"id", "poll_id", "option", "response", "user_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7203,6 +7690,14 @@ func (ec *executionContext) unmarshalInputPollResponseInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
+		case "option":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("option"))
+			it.Option, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "response":
 			var err error
 
@@ -7211,11 +7706,11 @@ func (ec *executionContext) unmarshalInputPollResponseInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-		case "user_ids":
+		case "user_id":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_ids"))
-			it.UserIds, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			it.UserID, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7864,9 +8359,29 @@ func (ec *executionContext) _PollResponse(ctx context.Context, sel ast.Selection
 
 			out.Values[i] = ec._PollResponse_response(ctx, field, obj)
 
-		case "user_ids":
+		case "user_id":
 
-			out.Values[i] = ec._PollResponse_user_ids(ctx, field, obj)
+			out.Values[i] = ec._PollResponse_user_id(ctx, field, obj)
+
+		case "option":
+
+			out.Values[i] = ec._PollResponse_option(ctx, field, obj)
+
+		case "created_at":
+
+			out.Values[i] = ec._PollResponse_created_at(ctx, field, obj)
+
+		case "updated_at":
+
+			out.Values[i] = ec._PollResponse_updated_at(ctx, field, obj)
+
+		case "created_by":
+
+			out.Values[i] = ec._PollResponse_created_by(ctx, field, obj)
+
+		case "updated_by":
+
+			out.Values[i] = ec._PollResponse_updated_by(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -7957,6 +8472,22 @@ func (ec *executionContext) _Polls(ctx context.Context, sel ast.SelectionSet, ob
 		case "status":
 
 			out.Values[i] = ec._Polls_status(ctx, field, obj)
+
+		case "created_at":
+
+			out.Values[i] = ec._Polls_created_at(ctx, field, obj)
+
+		case "updated_at":
+
+			out.Values[i] = ec._Polls_updated_at(ctx, field, obj)
+
+		case "created_by":
+
+			out.Values[i] = ec._Polls_created_by(ctx, field, obj)
+
+		case "updated_by":
+
+			out.Values[i] = ec._Polls_updated_by(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

@@ -23,7 +23,7 @@ type ClassRoomFlagsInput struct {
 	ID                     *string   `json:"id"`
 	IsClassroomStarted     *bool     `json:"is_classroom_started"`
 	IsParticipantsPresent  *bool     `json:"is_participants_present"`
-	IsAdDisplayed          *bool     `json:"is__ad_displayed"`
+	IsAdDisplayed          *bool     `json:"is_ad_displayed"`
 	IsBreak                *bool     `json:"is_break"`
 	IsModeratorJoined      *bool     `json:"is_moderator_joined"`
 	IsTrainerJoined        *bool     `json:"is_trainer_joined"`
@@ -96,17 +96,23 @@ type PaginatedTagsData struct {
 }
 
 type PollResponse struct {
-	ID       *string `json:"id"`
-	PollID   *string `json:"poll_id"`
-	Response *string `json:"response"`
-	UserIds  *string `json:"user_ids"`
+	ID        *string `json:"id"`
+	PollID    *string `json:"poll_id"`
+	Response  *string `json:"response"`
+	UserID    *string `json:"user_id"`
+	Option    *string `json:"option"`
+	CreatedAt *int    `json:"created_at"`
+	UpdatedAt *int    `json:"updated_at"`
+	CreatedBy *string `json:"created_by"`
+	UpdatedBy *string `json:"updated_by"`
 }
 
 type PollResponseInput struct {
 	ID       *string `json:"id"`
 	PollID   *string `json:"poll_id"`
+	Option   *string `json:"option"`
 	Response *string `json:"response"`
-	UserIds  *string `json:"user_ids"`
+	UserID   *string `json:"user_id"`
 }
 
 type PollResults struct {
@@ -125,6 +131,10 @@ type Polls struct {
 	Options       []*string `json:"options"`
 	PollOptionIds []*string `json:"poll_option_ids"`
 	Status        *string   `json:"status"`
+	CreatedAt     *int      `json:"created_at"`
+	UpdatedAt     *int      `json:"updated_at"`
+	CreatedBy     *string   `json:"created_by"`
+	UpdatedBy     *string   `json:"updated_by"`
 }
 
 type PollsInput struct {

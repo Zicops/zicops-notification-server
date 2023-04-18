@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/google/uuid"
@@ -13,7 +14,7 @@ import (
 )
 
 func AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error) {
-	_, err := GetClaimsFromContext(ctx)
+	claims, err := GetClaimsFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +42,8 @@ func AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
 		}
 		pollIds = append(pollIds, poll_id)
 	}
+	createdBy := claims["email"].(string)
+	createdAt := time.Now().String()
 	_, err = global.Client.Collection("polls").Doc(id).Set(ctx, map[string]interface{}{
 		"poll_name":  *input.PollName,
 		"meeting_id": *input.MeetingID,
@@ -48,6 +51,10 @@ func AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
 		"topic_id":   *input.TopicID,
 		"question":   *input.Question,
 		"options":    options,
+		"created_at": createdAt,
+		"created_by": createdBy,
+		"updated_at": createdAt,
+		"updated_by": createdBy,
 		"status":     *input.Status,
 	})
 	if err != nil {
@@ -152,18 +159,15 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 	if err != nil {
 		return nil, err
 	}
-	if input.Response != nil {
-		_, err = global.Client.Collection("polls").Doc(*input.ID).Update(ctx, []firestore.Update{
-			{
-				Path:  "response",
-				Value: *input.Response,
-			},
-		})
+	if input.UserID != nil {
+		if input.PollID == nil || input.Option == nil {
+			return nil, fmt.Errorf("please enter poll id, option, and userId")
+		}
+		optionId, err := getIdOfPollOption(ctx, *input.PollID, *input.Option)
 		if err != nil {
 			return nil, err
 		}
-	} else if input.UserIds != nil {
-		iter := global.Client.Collection("poll_response").Where("user_ids", "array-contains", *input.UserIds).Where("poll_id", "==", *input.PollID).Documents(ctx)
+		iter := global.Client.Collection("poll_response").Where("user_ids", "array-contains", *input.UserID).Where("poll_id", "==", *input.PollID).Documents(ctx)
 		for {
 			doc, err := iter.Next()
 			//see if iterator is done
@@ -184,7 +188,7 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 			_, err = global.Client.Collection("poll_response").Doc(id).Update(ctx, []firestore.Update{
 				{
 					Path:  "poll_response",
-					Value: firestore.ArrayRemove(input.UserIds),
+					Value: firestore.ArrayRemove(input.UserID),
 				},
 			})
 			if err != nil {
@@ -192,10 +196,10 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 			}
 		}
 
-		_, err = global.Client.Collection("polls_response").Doc(*input.ID).Update(ctx, []firestore.Update{
+		_, err = global.Client.Collection("polls_response").Doc(optionId).Update(ctx, []firestore.Update{
 			{
 				Path:  "user_ids",
-				Value: firestore.ArrayUnion(*input.UserIds),
+				Value: firestore.ArrayUnion(*input.UserID),
 			},
 		})
 		if err != nil {
@@ -208,9 +212,33 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 		ID:       input.ID,
 		PollID:   input.PollID,
 		Response: input.Response,
-		UserIds:  input.UserIds,
+		UserID:   input.UserID,
 	}
 	return &res, nil
+}
+
+func getIdOfPollOption(ctx context.Context, pollId string, option string) (string, error) {
+	iter := global.Client.Collection("poll_response").Where("poll_id", "==", pollId).Where("response", "==", option).Documents(ctx)
+	var res string
+	for {
+		doc, err := iter.Next()
+		//see if iterator is done
+		if err == iterator.Done {
+			break
+		}
+
+		//see if the error is no more items in iterator
+		if err != nil && err.Error() == "no more items in iterator" {
+			break
+		}
+
+		if err != nil {
+			log.Fatalf("Failed to iterate: %v", err)
+			return "", err
+		}
+		res = doc.Ref.ID
+	}
+	return res, nil
 }
 
 func GetPollResults(ctx context.Context, pollID *string) (*model.PollResults, error) {
@@ -271,7 +299,7 @@ func GetPollResults(ctx context.Context, pollID *string) (*model.PollResults, er
 				ID:       &ids[k],
 				PollID:   pollID,
 				Response: &response,
-				UserIds:  &userId,
+				UserID:   &userId,
 			}
 			pollResponse = append(pollResponse, &tmp)
 		}

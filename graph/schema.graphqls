@@ -125,6 +125,10 @@ type Polls{
   options: [String]
   poll_option_ids: [String]
   status: String
+  created_at: Int
+  updated_at: Int
+  created_by: String
+  updated_by: String
 }
 
 type PollResults{
@@ -136,15 +140,21 @@ type PollResults{
 input PollResponseInput {
   id: String
   poll_id: String
+  option: String
   response: String
-  user_ids: String
+  user_id: String
 }
 
 type PollResponse {
   id: String
   poll_id: String
   response: String
-  user_ids: String
+  user_id: String
+  option: String
+  created_at: Int
+  updated_at: Int
+  created_by: String
+  updated_by: String
 }
 
 input PublishedQuiz {
