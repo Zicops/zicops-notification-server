@@ -15,7 +15,7 @@ require (
 )
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.0.0-rc.2
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/robfig/cron/v3 v3.0.1
 )
 

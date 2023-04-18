@@ -145,6 +145,11 @@ type PollResponse {
   user_ids: String
 }
 
+input PublishedQuiz {
+  id: String
+  quizId: String
+}
+
 type Mutation {
   sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
@@ -158,6 +163,7 @@ type Mutation {
   addPoll(input: PollsInput): Polls
   updatePoll(input: PollsInput): Polls
   updatePollOptions(input: PollResponseInput): PollResponse
+  addQuizToClassroomFlags(input: PublishedQuiz): Boolean
 }
 
 type Query {

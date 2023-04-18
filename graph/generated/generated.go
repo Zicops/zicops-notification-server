@@ -86,6 +86,7 @@ type ComplexityRoot struct {
 		AddClassroomFlags        func(childComplexity int, input *model.ClassRoomFlagsInput) int
 		AddMessagesMeet          func(childComplexity int, message *model.Messages) int
 		AddPoll                  func(childComplexity int, input *model.PollsInput) int
+		AddQuizToClassroomFlags  func(childComplexity int, input *model.PublishedQuiz) int
 		AddToFirestore           func(childComplexity int, message []*model.FirestoreDataInput) int
 		AddUserTags              func(childComplexity int, ids []*model.UserDetails, tags []*string) int
 		AuthTokens               func(childComplexity int) int
@@ -166,6 +167,7 @@ type MutationResolver interface {
 	AddPoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
 	UpdatePoll(ctx context.Context, input *model.PollsInput) (*model.Polls, error)
 	UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*model.PollResponse, error)
+	AddQuizToClassroomFlags(ctx context.Context, input *model.PublishedQuiz) (*bool, error)
 }
 type QueryResolver interface {
 	GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error)
@@ -435,6 +437,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AddPoll(childComplexity, args["input"].(*model.PollsInput)), true
+
+	case "Mutation.addQuizToClassroomFlags":
+		if e.complexity.Mutation.AddQuizToClassroomFlags == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addQuizToClassroomFlags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddQuizToClassroomFlags(childComplexity, args["input"].(*model.PublishedQuiz)), true
 
 	case "Mutation.addToFirestore":
 		if e.complexity.Mutation.AddToFirestore == nil {
@@ -790,6 +804,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputNotificationInput,
 		ec.unmarshalInputPollResponseInput,
 		ec.unmarshalInputPollsInput,
+		ec.unmarshalInputPublishedQuiz,
 		ec.unmarshalInputUserDetails,
 	)
 	first := true
@@ -998,6 +1013,11 @@ type PollResponse {
   user_ids: String
 }
 
+input PublishedQuiz {
+  id: String
+  quizId: String
+}
+
 type Mutation {
   sendNotificationWithLink(notification: NotificationInput!, link: String!): [Notification]!
   addToFirestore(message: [FirestoreDataInput]!):String!
@@ -1011,6 +1031,7 @@ type Mutation {
   addPoll(input: PollsInput): Polls
   updatePoll(input: PollsInput): Polls
   updatePollOptions(input: PollResponseInput): PollResponse
+  addQuizToClassroomFlags(input: PublishedQuiz): Boolean
 }
 
 type Query {
@@ -1064,6 +1085,21 @@ func (ec *executionContext) field_Mutation_addPoll_args(ctx context.Context, raw
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalOPollsInput2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPollsInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_addQuizToClassroomFlags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.PublishedQuiz
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOPublishedQuiz2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPublishedQuiz(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3416,6 +3452,58 @@ func (ec *executionContext) fieldContext_Mutation_updatePollOptions(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updatePollOptions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addQuizToClassroomFlags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addQuizToClassroomFlags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddQuizToClassroomFlags(rctx, fc.Args["input"].(*model.PublishedQuiz))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addQuizToClassroomFlags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addQuizToClassroomFlags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7166,6 +7254,42 @@ func (ec *executionContext) unmarshalInputPollsInput(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPublishedQuiz(ctx context.Context, obj interface{}) (model.PublishedQuiz, error) {
+	var it model.PublishedQuiz
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "quizId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "quizId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quizId"))
+			it.QuizID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserDetails(ctx context.Context, obj interface{}) (model.UserDetails, error) {
 	var it model.UserDetails
 	asMap := map[string]interface{}{}
@@ -7539,6 +7663,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updatePollOptions(ctx, field)
+			})
+
+		case "addQuizToClassroomFlags":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addQuizToClassroomFlags(ctx, field)
 			})
 
 		default:
@@ -8924,6 +9054,14 @@ func (ec *executionContext) unmarshalOPollsInput2ᚖgithubᚗcomᚋzicopsᚋzico
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputPollsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOPublishedQuiz2ᚖgithubᚗcomᚋzicopsᚋzicopsᚑnotificationᚑserverᚋgraphᚋmodelᚐPublishedQuiz(ctx context.Context, v interface{}) (*model.PublishedQuiz, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPublishedQuiz(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

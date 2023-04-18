@@ -137,6 +137,11 @@ type PollsInput struct {
 	Status    *string   `json:"status"`
 }
 
+type PublishedQuiz struct {
+	ID     *string `json:"id"`
+	QuizID *string `json:"quizId"`
+}
+
 type TagsData struct {
 	UserLspID *string   `json:"user_lsp_id"`
 	UserID    *string   `json:"user_id"`

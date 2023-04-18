@@ -134,6 +134,16 @@ func (r *mutationResolver) UpdatePollOptions(ctx context.Context, input *model.P
 	return resp, nil
 }
 
+// AddQuizToClassroomFlags is the resolver for the addQuizToClassroomFlags field.
+func (r *mutationResolver) AddQuizToClassroomFlags(ctx context.Context, input *model.PublishedQuiz) (*bool, error) {
+	resp, err := handlers.AddQuizToClassroomFlags(ctx, input)
+	if err != nil {
+		log.Printf("Got error while adding quiz to classroom flags: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
 // GetAll is the resolver for the getAll field.
 func (r *queryResolver) GetAll(ctx context.Context, prevPageSnapShot string, pageSize int, isRead *bool) (*model.PaginatedNotifications, error) {
 	resp, err := handlers.GetAllNotifications(ctx, prevPageSnapShot, pageSize, isRead)

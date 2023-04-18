@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"cloud.google.com/go/firestore"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
 )
@@ -30,7 +31,6 @@ func AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*
 		"is_screen_sharing_enabled": input.IsScreenSharingEnabled,
 		"is_chat_enabled":           input.IsChatEnabled,
 		"is_qa_enabled":             input.IsQaEnabled,
-		"quiz":                      input.Quiz,
 	})
 	if err != nil {
 		return nil, err
@@ -50,7 +50,29 @@ func AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*
 		IsScreenSharingEnabled: input.IsScreenSharingEnabled,
 		IsChatEnabled:          input.IsChatEnabled,
 		IsQaEnabled:            input.IsQaEnabled,
-		Quiz:                   input.Quiz,
 	}
+	return &res, nil
+}
+
+func AddQuizToClassroomFlags(ctx context.Context, input *model.PublishedQuiz) (*bool, error) {
+	_, err := GetClaimsFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if input == nil {
+		return nil, nil
+	}
+
+	_, err = global.Client.Collection("ClassroomFlags").Doc(*input.ID).Update(ctx, []firestore.Update{
+		{
+			Path:  "quiz",
+			Value: firestore.ArrayUnion(*input.QuizID),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	res := true
 	return &res, nil
 }
