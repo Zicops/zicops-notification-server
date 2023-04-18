@@ -65,7 +65,7 @@ input ClassRoomFlagsInput {
   id: String
   is_classroom_started: Boolean
   is_participants_present: Boolean
-  is__ad_displayed: Boolean
+  is_ad_displayed: Boolean
   is_break: Boolean
   is_moderator_joined: Boolean
   is_trainer_joined: Boolean
