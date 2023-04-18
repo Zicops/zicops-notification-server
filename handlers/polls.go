@@ -167,7 +167,7 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 		if err != nil {
 			return nil, err
 		}
-		iter := global.Client.Collection("poll_response").Where("user_ids", "array-contains", *input.UserID).Where("poll_id", "==", *input.PollID).Documents(ctx)
+		iter := global.Client.Collection("polls_response").Where("user_ids", "array-contains", *input.UserID).Where("poll_id", "==", *input.PollID).Documents(ctx)
 		for {
 			doc, err := iter.Next()
 			//see if iterator is done
@@ -185,9 +185,9 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 				return nil, err
 			}
 			id := doc.Ref.ID
-			_, err = global.Client.Collection("poll_response").Doc(id).Update(ctx, []firestore.Update{
+			_, err = global.Client.Collection("polls_response").Doc(id).Update(ctx, []firestore.Update{
 				{
-					Path:  "poll_response",
+					Path:  "user_ids",
 					Value: firestore.ArrayRemove(input.UserID),
 				},
 			})
@@ -218,7 +218,7 @@ func UpdatePollOptions(ctx context.Context, input *model.PollResponseInput) (*mo
 }
 
 func getIdOfPollOption(ctx context.Context, pollId string, option string) (string, error) {
-	iter := global.Client.Collection("poll_response").Where("poll_id", "==", pollId).Where("response", "==", option).Documents(ctx)
+	iter := global.Client.Collection("polls_response").Where("poll_id", "==", pollId).Where("response", "==", option).Documents(ctx)
 	var res string
 	for {
 		doc, err := iter.Next()
