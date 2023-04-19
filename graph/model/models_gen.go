@@ -66,6 +66,7 @@ type FirestoreMessage struct {
 }
 
 type Messages struct {
+	ParentID  *string `json:"parent_id"`
 	Body      *string `json:"body"`
 	MeetingID *string `json:"meeting_id"`
 	UserID    *string `json:"user_id"`

@@ -96,6 +96,7 @@ type ClassRoomFlags {
 }
 
 input Messages {
+  parent_id: String
   body: String
   meeting_id: String
   user_id: String

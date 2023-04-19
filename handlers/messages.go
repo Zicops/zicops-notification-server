@@ -23,6 +23,7 @@ func AddMessagesMeet(ctx context.Context, message *model.Messages) (*bool, error
 	id := uuid.New().String()
 
 	_, err = global.Client.Collection("MeetMessages").Doc(id).Set(ctx, map[string]interface{}{
+		"parent_id":  message.ParentID,
 		"body":       message.Body,
 		"user_id":    message.UserID,
 		"time":       message.Time,
