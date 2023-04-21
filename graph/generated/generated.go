@@ -1045,6 +1045,7 @@ type ClassRoomFlags {
 
 input Messages {
   parent_id: String
+  responses: Int
   body: String
   meeting_id: String
   user_id: String
@@ -7564,7 +7565,7 @@ func (ec *executionContext) unmarshalInputMessages(ctx context.Context, obj inte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"parent_id", "body", "meeting_id", "user_id", "time", "chat_type"}
+	fieldsInOrder := [...]string{"parent_id", "responses", "body", "meeting_id", "user_id", "time", "chat_type"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7576,6 +7577,14 @@ func (ec *executionContext) unmarshalInputMessages(ctx context.Context, obj inte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent_id"))
 			it.ParentID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "responses":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("responses"))
+			it.Responses, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}

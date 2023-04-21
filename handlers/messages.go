@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"cloud.google.com/go/firestore"
 	"github.com/google/uuid"
 	"github.com/zicops/zicops-notification-server/global"
 	"github.com/zicops/zicops-notification-server/graph/model"
@@ -29,9 +30,20 @@ func AddMessagesMeet(ctx context.Context, message *model.Messages) (*bool, error
 		"time":       message.Time,
 		"meeting_id": message.MeetingID,
 		"chat_type":  message.ChatType,
+		"responses":  message.Responses,
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	if message.ParentID != nil {
+		_, err := global.Client.Collection("MeetMessages").Doc(*message.ParentID).Update(ctx, []firestore.Update{
+			{Path: "responses",
+				Value: firestore.Increment(1)},
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	res := true
