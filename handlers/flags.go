@@ -17,15 +17,18 @@ func AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*
 	if input == nil {
 		return nil, nil
 	}
+	if input.ID == nil {
+		return nil, err
+	}
 
 	_, err = global.Client.Collection("ClassroomFlags").Doc(*input.ID).Set(ctx, map[string]interface{}{
-		"IsClassroomStarted":        input.IsClassroomStarted,
-		"IsParticipantsPresent":     input.IsParticipantsPresent,
-		"IsAdDisplayed":             input.IsAdDisplayed,
-		"IsBreak":                   input.IsBreak,
-		"IsModeratorJoined":         input.IsModeratorJoined,
-		"IsTrainerJoined":           input.IsTrainerJoined,
-		"AdVideoURL":                input.AdVideoURL,
+		"is_classroom_started":      input.IsClassroomStarted,
+		"is_participants_present":   input.IsParticipantsPresent,
+		"is_ad_displayed":           input.IsAdDisplayed,
+		"is_break":                  input.IsBreak,
+		"is_moderator_joined":       input.IsModeratorJoined,
+		"is_trainer_joined":         input.IsTrainerJoined,
+		"ad_video_url":              input.AdVideoURL,
 		"is_microphone_enabled":     input.IsMicrophoneEnabled,
 		"is_video_sharing_enabled":  input.IsVideoSharingEnabled,
 		"is_screen_sharing_enabled": input.IsScreenSharingEnabled,
