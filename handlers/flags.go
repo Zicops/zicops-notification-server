@@ -20,7 +20,6 @@ func AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*
 	if input.ID == nil {
 		return nil, err
 	}
-
 	_, err = global.Client.Collection("ClassroomFlags").Doc(*input.ID).Set(ctx, map[string]interface{}{
 		"is_classroom_started":      input.IsClassroomStarted,
 		"is_participants_present":   input.IsParticipantsPresent,
