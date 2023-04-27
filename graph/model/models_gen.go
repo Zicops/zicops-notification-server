@@ -16,6 +16,7 @@ type ClassRoomFlags struct {
 	IsScreenSharingEnabled *bool     `json:"is_screen_sharing_enabled"`
 	IsChatEnabled          *bool     `json:"is_chat_enabled"`
 	IsQaEnabled            *bool     `json:"is_qa_enabled"`
+	IsClassroomEnded       *string   `json:"is_classroom_ended"`
 	Quiz                   []*string `json:"quiz"`
 }
 
@@ -33,6 +34,7 @@ type ClassRoomFlagsInput struct {
 	IsScreenSharingEnabled *bool     `json:"is_screen_sharing_enabled"`
 	IsChatEnabled          *bool     `json:"is_chat_enabled"`
 	IsQaEnabled            *bool     `json:"is_qa_enabled"`
+	IsClassroomEnded       *string   `json:"is_classroom_ended"`
 	Quiz                   []*string `json:"quiz"`
 }
 

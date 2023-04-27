@@ -75,6 +75,7 @@ input ClassRoomFlagsInput {
   is_screen_sharing_enabled: Boolean
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
+  is_classroom_ended: String
   quiz: [String]
 } 
 
@@ -92,6 +93,7 @@ type ClassRoomFlags {
   is_screen_sharing_enabled: Boolean
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
+  is_classroom_ended: String
   quiz:[String]
 }
 
