@@ -55,7 +55,9 @@ func SendNotificationWithLink(ctx context.Context, notification model.Notificati
 	//now we need to get fcm-token for given email, i.e., from email we need userID and using that we will get fcm-token
 	for k, userId := range notification.UserID {
 		//userId := base64.StdEncoding.EncodeToString([]byte(*email))
-
+		if userId == nil {
+			continue
+		}
 		var resp []map[string]interface{}
 		//using this user id we will get fcm tokens
 		iter := global.Client.Collection("tokens").Where("UserID", "==", *userId).Where("LspID", "==", lsp).Documents(ctx)
