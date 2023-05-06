@@ -53,6 +53,7 @@ type ComplexityRoot struct {
 		IsClassroomStarted     func(childComplexity int) int
 		IsMicrophoneEnabled    func(childComplexity int) int
 		IsModeratorJoined      func(childComplexity int) int
+		IsOverrideConfig       func(childComplexity int) int
 		IsParticipantsPresent  func(childComplexity int) int
 		IsQaEnabled            func(childComplexity int) int
 		IsScreenSharingEnabled func(childComplexity int) int
@@ -265,6 +266,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ClassRoomFlags.IsModeratorJoined(childComplexity), true
+
+	case "ClassRoomFlags.is_override_config":
+		if e.complexity.ClassRoomFlags.IsOverrideConfig == nil {
+			break
+		}
+
+		return e.complexity.ClassRoomFlags.IsOverrideConfig(childComplexity), true
 
 	case "ClassRoomFlags.is_participants_present":
 		if e.complexity.ClassRoomFlags.IsParticipantsPresent == nil {
@@ -1032,6 +1040,7 @@ input ClassRoomFlagsInput {
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
   is_classroom_ended: String
+  is_override_config: Boolean
   quiz: [String]
 } 
 
@@ -1050,6 +1059,7 @@ type ClassRoomFlags {
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
   is_classroom_ended: String
+  is_override_config: Boolean
   quiz:[String]
 }
 
@@ -2158,6 +2168,47 @@ func (ec *executionContext) fieldContext_ClassRoomFlags_is_classroom_ended(ctx c
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ClassRoomFlags_is_override_config(ctx context.Context, field graphql.CollectedField, obj *model.ClassRoomFlags) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClassRoomFlags_is_override_config(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsOverrideConfig, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ClassRoomFlags_is_override_config(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ClassRoomFlags",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3331,6 +3382,8 @@ func (ec *executionContext) fieldContext_Mutation_addClassroomFlags(ctx context.
 				return ec.fieldContext_ClassRoomFlags_is_qa_enabled(ctx, field)
 			case "is_classroom_ended":
 				return ec.fieldContext_ClassRoomFlags_is_classroom_ended(ctx, field)
+			case "is_override_config":
+				return ec.fieldContext_ClassRoomFlags_is_override_config(ctx, field)
 			case "quiz":
 				return ec.fieldContext_ClassRoomFlags_quiz(ctx, field)
 			}
@@ -7434,7 +7487,7 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "is_classroom_started", "is_participants_present", "is_ad_displayed", "is_break", "is_moderator_joined", "is_trainer_joined", "ad_video_url", "is_microphone_enabled", "is_video_sharing_enabled", "is_screen_sharing_enabled", "is_chat_enabled", "is_qa_enabled", "is_classroom_ended", "quiz"}
+	fieldsInOrder := [...]string{"id", "is_classroom_started", "is_participants_present", "is_ad_displayed", "is_break", "is_moderator_joined", "is_trainer_joined", "ad_video_url", "is_microphone_enabled", "is_video_sharing_enabled", "is_screen_sharing_enabled", "is_chat_enabled", "is_qa_enabled", "is_classroom_ended", "is_override_config", "quiz"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7550,6 +7603,14 @@ func (ec *executionContext) unmarshalInputClassRoomFlagsInput(ctx context.Contex
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_classroom_ended"))
 			it.IsClassroomEnded, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_override_config":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_override_config"))
+			it.IsOverrideConfig, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8036,6 +8097,10 @@ func (ec *executionContext) _ClassRoomFlags(ctx context.Context, sel ast.Selecti
 		case "is_classroom_ended":
 
 			out.Values[i] = ec._ClassRoomFlags_is_classroom_ended(ctx, field, obj)
+
+		case "is_override_config":
+
+			out.Values[i] = ec._ClassRoomFlags_is_override_config(ctx, field, obj)
 
 		case "quiz":
 

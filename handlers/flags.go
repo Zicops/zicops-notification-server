@@ -34,6 +34,7 @@ func AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*
 		"is_chat_enabled":           input.IsChatEnabled,
 		"is_qa_enabled":             input.IsQaEnabled,
 		"is_classroom_ended":        input.IsClassroomEnded,
+		"is_override_config":        input.IsOverrideConfig,
 	})
 	if err != nil {
 		return nil, err
@@ -54,6 +55,7 @@ func AddClassroomFlags(ctx context.Context, input *model.ClassRoomFlagsInput) (*
 		IsChatEnabled:          input.IsChatEnabled,
 		IsQaEnabled:            input.IsQaEnabled,
 		IsClassroomEnded:       input.IsClassroomEnded,
+		IsOverrideConfig:       input.IsOverrideConfig,
 	}
 	return &res, nil
 }

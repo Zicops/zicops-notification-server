@@ -17,6 +17,7 @@ type ClassRoomFlags struct {
 	IsChatEnabled          *bool     `json:"is_chat_enabled"`
 	IsQaEnabled            *bool     `json:"is_qa_enabled"`
 	IsClassroomEnded       *string   `json:"is_classroom_ended"`
+	IsOverrideConfig       *bool     `json:"is_override_config"`
 	Quiz                   []*string `json:"quiz"`
 }
 
@@ -35,6 +36,7 @@ type ClassRoomFlagsInput struct {
 	IsChatEnabled          *bool     `json:"is_chat_enabled"`
 	IsQaEnabled            *bool     `json:"is_qa_enabled"`
 	IsClassroomEnded       *string   `json:"is_classroom_ended"`
+	IsOverrideConfig       *bool     `json:"is_override_config"`
 	Quiz                   []*string `json:"quiz"`
 }
 

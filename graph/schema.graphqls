@@ -76,6 +76,7 @@ input ClassRoomFlagsInput {
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
   is_classroom_ended: String
+  is_override_config: Boolean
   quiz: [String]
 } 
 
@@ -94,6 +95,7 @@ type ClassRoomFlags {
   is_chat_enabled: Boolean
   is_qa_enabled: Boolean
   is_classroom_ended: String
+  is_override_config: Boolean
   quiz:[String]
 }
 
