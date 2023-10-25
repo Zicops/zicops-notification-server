@@ -11,7 +11,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.1
 	golang.org/x/oauth2 v0.7.0
 	google.golang.org/api v0.118.0
-	google.golang.org/grpc v1.54.0
+	google.golang.org/grpc v1.56.3
 )
 
 require (
